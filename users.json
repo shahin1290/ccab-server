@@ -1,0 +1,12 @@
+[{
+    "_id": {
+      "$oid": "6034ff5fc1d289612c50bdb5"
+    },
+    "isAdmin": true,
+    "name": "abdul",
+    "email": "rahmonblog@gmail.com",
+    "password": "$2a$10$i.9yf0JTPDsMcHOd9UkonOfkp5eBxeYhxmGUi3k5OPKO6EqXeQjW.",
+    "__v": 0,
+    "deactivated": false,
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwMzRmZjVmYzFkMjg5NjEyYzUwYmRiNSIsImlhdCI6MTYxNDYxMjU4NX0.Ccq8xKJbbKWYC_h1TtkP7l5QeGl41job75dw4PW64TY"
+  }]
