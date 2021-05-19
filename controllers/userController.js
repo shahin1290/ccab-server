@@ -7,6 +7,7 @@ const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
 const {sendMail} = require('../middleware/snedMail');
 const { Access } = require("accesscontrol");
+const { sendMail } = require('../middleware/snedMail')
 
 
 //********** validation Resault ************
@@ -290,7 +291,6 @@ exports.viewUserProfile = async (req, res) => {
 //@ ROUTE /api/users/profile
 
 exports.update = async (req, res) => {
-  console.log('phoneNumber');
   const errors = getValidationResualt(req)
   if(errors)
   //returning only first error allways 
@@ -318,6 +318,11 @@ exports.update = async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const password = await bcrypt.hash(req.body.password, salt);
       await User.updateOne({_id : user._id },{name:name, email:email,password:password});
+      }else if (req.file) {
+        await User.updateOne(
+          { _id: user._id },
+          { name, email, phoneNumber, avatar: req.file.filename }
+        )
       }
    
     else {

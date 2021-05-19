@@ -4,7 +4,7 @@ const userController = require("../controllers/userController");
 const { AllowIfLogin, grantAccess } = require("../middleware/auth");
 const {userValidatorChek ,
         AccessUserValidator,
-        UpdateUserValidator,
+        uploadCallBack,
         UpdateAnyUserValidator} = require("../middleware/userValid");
 
 
@@ -26,7 +26,7 @@ router
       .route("/profile")
       .get(AllowIfLogin,grantAccess('readOwn','profile'), userController.view)
       // public for all but the gust, update profile
-      .put(AllowIfLogin, userController.update)
+      .put(AllowIfLogin, uploadCallBack,userController.update)
       // public for all users : Get own profile
       
     
