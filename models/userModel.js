@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema({
   phoneNumber: {
     type: String
   },
+  avatar: {
+    type: String
+  },
   AccessUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,

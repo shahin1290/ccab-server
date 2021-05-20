@@ -22,5 +22,8 @@ router
   .route('/:bootcampId')
   .post(AllowIfLogin, orderController.createOrder)
 
+  router
+  .route('/myorders')
+  .get(AllowIfLogin, orderController.studentOrders)
 
 module.exports = router
