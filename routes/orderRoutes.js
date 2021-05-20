@@ -15,7 +15,7 @@ const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 
     router
     .route('/capture/:bootcampId')
-    .post(AllowIfLogin,orderController.captureOrder)
+    .get(AllowIfLogin,orderController.captureOrder)
 
 
 router

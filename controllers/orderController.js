@@ -244,13 +244,13 @@ exports.captureOrder = async (req, res) => {
       const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
          
       // send acknowled order 
-      const resp = await axios.post(`https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}/acknowledge`,{},config)
+      const resp = await axios.post(`https://api.playground.klarna.com/ordermanagement/v1/orders/${order[0].charge}/acknowledge`,{},config)
                   console.log("acknowledge : ", resp );
 
       if (order.length){
           // update the order status of verified 
-          await order[0].updateOne({orderStatus : 'Verified'})
-        console.log('Verified');
+          await order[0].updateOne({orderStatus : 'Delivered'})
+        console.log('Delivered');
 
       }
       console.log('ids : ',bootcampId  );
