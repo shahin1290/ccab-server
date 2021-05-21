@@ -82,7 +82,8 @@ exports.roles = (()=>{
         .createAny("task")
         .deleteAny("task")
         .updateAny("task")
-        
+        //orders 
+        .readAny("order")
     
     return ac;
 })();

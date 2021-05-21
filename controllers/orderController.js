@@ -34,7 +34,10 @@ exports.createOrder = async (req, res) => {
       course: bootcamp._id,
       orderBy: user._id,
       amount: charge.amount,
-      charge: charge.id
+      charge: charge.id,
+      currency: 'USD',
+      orderStatus:'Delivered',
+      method:'Card'
     })
 
     const order = await newOrder.save()
@@ -47,8 +50,42 @@ exports.createOrder = async (req, res) => {
   }
 }
 
+
+//@ DESC GET All orders for Admin
+//@ ROUTE /api/order/myorders
+//@ access login Admin
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({}).populate(
+      'course',
+      'name',
+
+    ).populate('orderBy')
+
+    if (!orders.length) {
+      return res.status(404).json({
+        success: false,
+        message: "There is not  any Orders yet."
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: orders
+    })
+  } catch (error) {
+    console.log(error );
+    return res.status(500).json({
+      success: false,
+      error: 'Server error: ' + error.message
+    })
+  }
+}
+
+
+
 //@ DESC GET All orders for student
-//@ ROUTE /api/order/
+//@ ROUTE /api/order/myorders
 //@ access login user
 exports.studentOrders = async (req, res) => {
   try {
@@ -69,6 +106,7 @@ exports.studentOrders = async (req, res) => {
       data: studentOrders
     })
   } catch (error) {
+    console.log(error );
     return res.status(500).json({
       success: false,
       error: 'Server error: ' + error.message
@@ -76,6 +114,38 @@ exports.studentOrders = async (req, res) => {
   }
 }
 
+
+//@ DESC GET one order for student
+//@ ROUTE /api/order/:bootcampId
+//@ access login user
+exports.ViewOrder = async (req, res) => {
+  const { bootcampId}= req.params
+
+  try {
+    const bootcamp = await Bootcamp.findById(bootcampId)
+    const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
+
+  
+
+    if (!order.length) {
+      return res.status(404).json({
+        success: false,
+        error: "You don't have any Order yet."
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: order[0]
+    })
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server error: ' + error.message
+    })
+  }
+}
 
 
 //@ DESC POST A NEW order
@@ -113,12 +183,14 @@ exports.createKlarnaOrder = async (req, res) => {
         const resp = await axios.post('https://api.playground.klarna.com/checkout/v3/orders/',data,config)
 
           const user = await User.findById(req.user._id)
-
+        console.log(resp.data);
           const newOrder = new Order({
             course: bootcamp._id,
             orderBy: user._id,
-            amount: resp.data.order_amount,
-            charge: resp.data.order_id
+            amount: resp.data.order_amount/100,
+            charge: resp.data.order_id,
+            currency:resp.data.purchase_currency,
+            method:'Klarna'
           })
 
             await newOrder.save()
@@ -245,7 +317,7 @@ exports.captureOrder = async (req, res) => {
          
       // send acknowled order 
       const resp = await axios.post(`https://api.playground.klarna.com/ordermanagement/v1/orders/${order[0].charge}/acknowledge`,{},config)
-                  console.log("acknowledge : ", resp );
+                  //console.log("acknowledge : ", resp );
 
       if (order.length){
           // update the order status of verified 

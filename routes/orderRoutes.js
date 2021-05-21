@@ -3,6 +3,11 @@ const router = express.Router()
 const orderController = require('../controllers/orderController')
 const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 
+router
+.route('/')
+.get(AllowIfLogin,grantAccess('readAny','order'),orderController.getAllOrders)
+
+
   router
     .route('/:bootcampId/klarna/order')
     .post(AllowIfLogin,orderController.createKlarnaOrder)
@@ -21,7 +26,7 @@ const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 router
   .route('/:bootcampId')
   .post(AllowIfLogin, orderController.createOrder)
-
+  .get(AllowIfLogin,orderController.ViewOrder)
   router
   .route('/myorders')
   .get(AllowIfLogin, orderController.studentOrders)

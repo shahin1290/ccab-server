@@ -241,6 +241,7 @@ exports.view = async (req, res) => {
       email: user.email,
       phone:user.phoneNumber,
       user_type: user.user_type,
+      avatar:user.avatar
     });
   } catch (error) {
     console.log(error);
@@ -274,6 +275,7 @@ exports.viewUserProfile = async (req, res) => {
       email: user.email,
       user_type: user.user_type,
       phone:user.phoneNumber,
+      avatar:user.avatar
     });
 
   } catch (error) {
@@ -344,6 +346,7 @@ exports.update = async (req, res) => {
       email: updatedUser.email,
       user_type: updatedUser.user_type,
       token:updatedUser.token,
+      avatar:updatedUser.avatar
     });
 
   } catch (error) {
@@ -418,6 +421,7 @@ exports.login = async (req, res) => {
         user_type: user.user_type,
         phone:user.phoneNumber,
         token: user.token,
+        avatar:user.avatar,
       });
     } else {
       res.status(401).json({
@@ -462,6 +466,7 @@ exports.isTokenValid = async(req,res,next)=>{
           email: req.user.email,
           phone:phoneNumber,
           user_type: req.user.user_type,
+          avatar:req.user.avatar
         }
     })}
       
