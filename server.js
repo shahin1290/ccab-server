@@ -6,7 +6,7 @@ const path = require('path')
 const Bootcamp = require('./models/bootcampModel')
 const Week = require('./models/weekModel')
 const User = require('./models/userModel')
-const { sendMail } = require('./middleware/snedMail')
+const {sendContactMail} = require('./util/contactMail')
 const app = express()
 var cron = require('node-cron')
 var cors = require('cors')
@@ -23,8 +23,18 @@ app.use(bodyparser.urlencoded({ extended: true }))
 /** static file **/
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(cors())
-app.get('/', (req, res, nexet) => {
+app.get('/', (req, res, next) => {
   res.send('Server Running...')
+})
+
+//contact mail
+app.post('/contact', (req, res, next) => {
+  try {
+    sendContactMail(req.body)
+    res.send('MESSAGE IS SUCCESSFULLY SENT')
+  } catch (err) {
+    res.send(err)
+  }
 })
 
 /* //schedule jobs
@@ -89,7 +99,6 @@ app.use('/api/weeks', weekRoutes)
 app.use('/api/quizAnswer', quizAnswerRoutes)
 app.use('/api/quizzes', quizRoutes)
 app.use('/api/order', orderRoutes)
-
 
 app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)
