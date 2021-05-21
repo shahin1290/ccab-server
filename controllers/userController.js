@@ -7,7 +7,6 @@ const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
 const {sendMail} = require('../middleware/snedMail');
 const { Access } = require("accesscontrol");
-const { sendMail } = require('../middleware/snedMail')
 
 
 //********** validation Resault ************
