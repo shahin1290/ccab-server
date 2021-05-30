@@ -12,6 +12,27 @@ function getValidationResualt(req) {
   return false
 }
 
+exports.stripePaymentIntent = async (req, res) => {
+  const { paymentMethodType, currency, amount } = req.body
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency,
+      payment_method_types: [paymentMethodType]
+    })
+
+    // Send publishable key and PaymentIntent details to client
+    res.status(200).send(paymentIntent.client_secret)
+  } catch (e) {
+    return res.status(400).send({
+      error: {
+        message: e.message
+      }
+    })
+  }
+}
+
 //@ DESC POST A NEW order
 //@ ROUTE /api/order/
 //@ access login user
@@ -21,28 +42,28 @@ exports.createOrder = async (req, res) => {
   const bootcamp = await Bootcamp.findById(req.params.bootcampId)
 
   try {
-    const charge = await stripe.paymentIntents.create({
-      amount,
-      currency: 'USD',
-      confirm: true,
-      payment_method: token
-    })
-
     const user = await User.findById(req.user._id)
 
     const newOrder = new Order({
       course: bootcamp._id,
       orderBy: user._id,
-      amount: charge.amount,
-      charge: charge.id,
+      amount: amount,
+      charge: token,
       currency: 'USD',
-      orderStatus:'Delivered',
-      method:'Card'
+      orderStatus: 'Delivered',
+      method: 'Card'
     })
 
     const order = await newOrder.save()
 
-    if (order) return res.status(201).json({ success: true, data: order })
+    if (order) {
+      //update bootcamp students array
+      await Bootcamp.findByIdAndUpdate(order.course, {
+        $push: { students: user._id }
+      })
+
+      return res.status(201).json({ success: true, data: order })
+    }
   } catch (error) {
     res.status(500).json({
       message: 'Server Error' + error
@@ -50,22 +71,19 @@ exports.createOrder = async (req, res) => {
   }
 }
 
-
 //@ DESC GET All orders for Admin
 //@ ROUTE /api/order/myorders
 //@ access login Admin
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate(
-      'course',
-      'name',
-
-    ).populate('orderBy')
+    const orders = await Order.find({})
+      .populate('course', 'name')
+      .populate('orderBy')
 
     if (!orders.length) {
       return res.status(404).json({
         success: false,
-        message: "There is not  any Orders yet."
+        message: 'There is not  any Orders yet.'
       })
     }
 
@@ -74,15 +92,13 @@ exports.getAllOrders = async (req, res) => {
       data: orders
     })
   } catch (error) {
-    console.log(error );
+    console.log(error)
     return res.status(500).json({
       success: false,
       error: 'Server error: ' + error.message
     })
   }
 }
-
-
 
 //@ DESC GET All orders for student
 //@ ROUTE /api/order/myorders
@@ -97,7 +113,7 @@ exports.studentOrders = async (req, res) => {
     if (!studentOrders.length) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Order yet."
+        message: "You don't have any Order yet."
       })
     }
 
@@ -106,47 +122,47 @@ exports.studentOrders = async (req, res) => {
       data: studentOrders
     })
   } catch (error) {
-    console.log(error );
+    console.log(error)
     return res.status(500).json({
       success: false,
-      error: 'Server error: ' + error.message
+      message: 'Server error: ' + error.message
     })
   }
 }
-
 
 //@ DESC GET one order for student
 //@ ROUTE /api/order/:bootcampId
 //@ access login user
 exports.ViewOrder = async (req, res) => {
-  const { bootcampId}= req.params
+  const { bootcampId } = req.params
+
 
   try {
     const bootcamp = await Bootcamp.findById(bootcampId)
-    const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
 
-  
+    const order = await Order.findOne({
+      course: bootcamp._id,
+      orderBy: req.user._id
+    })
 
-    if (!order.length) {
+    if (!order) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Order yet."
+        message: "You don't have any Order yet."
       })
     }
 
     return res.status(200).json({
       success: true,
-      data: order[0]
+      data: order
     })
-
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: 'Server error: ' + error.message
+      message: 'Server error: ' + error.message
     })
   }
 }
-
 
 //@ DESC POST A NEW order
 //@ ROUTE /api/order/
@@ -157,58 +173,74 @@ exports.createKlarnaOrder = async (req, res) => {
   const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
-
-    const config = {withCredentials: true,
+    const config = {
+      withCredentials: true,
       auth: {
         username: process.env.REACT_APP_USERNAME,
         password: process.env.REACT_APP_PASS
-    },
+      },
       headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Credentials': true,
-                  } }
-
-      // check if the order already creted before !! 
-      const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
-          //console.log( order[0].charge);
-      if (order.length){
-          // send Get request to Klarna API ( Read the oreder )
-          const resp = await axios.get('https://api.playground.klarna.com/checkout/v3/orders/'+order[0].charge,config)
-          if (resp) return res.status(201).json({ success: true, data: JSON.stringify(resp.data)  })
-
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': true
       }
+    }
 
-      // Create New Order 
-                  
-        const resp = await axios.post('https://api.playground.klarna.com/checkout/v3/orders/',data,config)
+    // check if the order already creted before !!
+    const order = await Order.find({
+      course: bootcampId,
+      orderBy: req.user._id
+    })
+    //console.log( order[0].charge);
+    if (order.length) {
+      // send Get request to Klarna API ( Read the oreder )
+      const resp = await axios.get(
+        'https://api.playground.klarna.com/checkout/v3/orders/' +
+          order[0].charge,
+        config
+      )
+      if (resp)
+        return res
+          .status(201)
+          .json({ success: true, data: JSON.stringify(resp.data) })
+    }
 
-          const user = await User.findById(req.user._id)
-        console.log(resp.data);
-          const newOrder = new Order({
-            course: bootcamp._id,
-            orderBy: user._id,
-            amount: resp.data.order_amount/100,
-            charge: resp.data.order_id,
-            currency:resp.data.purchase_currency,
-            method:'Klarna'
-          })
+    // Create New Order
 
-            await newOrder.save()
-    if (resp) return res.status(201).json({ success: true, data: JSON.stringify(resp.data)  })
+    const resp = await axios.post(
+      'https://api.playground.klarna.com/checkout/v3/orders/',
+      data,
+      config
+    )
 
+    const user = await User.findById(req.user._id)
+    console.log(resp.data)
+    const newOrder = new Order({
+      course: bootcamp._id,
+      orderBy: user._id,
+      amount: resp.data.order_amount / 100,
+      charge: resp.data.order_id,
+      currency: resp.data.purchase_currency,
+      method: 'Klarna'
+    })
+
+    await newOrder.save()
+
+    //update bootcamp students array
+    await Bootcamp.findByIdAndUpdate(order.course, {
+      $push: { students: user._id }
+    })
+
+    if (resp)
+      return res
+        .status(201)
+        .json({ success: true, data: JSON.stringify(resp.data) })
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(500).json({
       message: 'Server Error' + error
     })
   }
 }
-
-
-
-
-
-
 
 //@ DESC GET AN order
 //@ ROUTE /api/order/bootcampid/klarna/order
@@ -219,36 +251,43 @@ exports.ReadKlarnaOrder = async (req, res) => {
   const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
-
-    const config = {withCredentials: true,
+    const config = {
+      withCredentials: true,
       auth: {
         username: process.env.REACT_APP_USERNAME,
         password: process.env.REACT_APP_PASS
-    },
+      },
       headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Credentials': true,
-                  } }
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': true
+      }
+    }
 
-      // check if the order already creted before !! 
-      const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
-          console.log( order[0].charge);
-      if (order.length){
-          // send Get request to Klarna API ( Read the oreder )
-          const resp = await axios.get('https://api.playground.klarna.com/checkout/v3/orders/'+order[0].charge,config)
-          console.log(resp.data);
-          if ( resp.data.status == 'checkout_complete') {
-            await order[0].updateOne({orderStatus : 'Processed'})
-          }
-
-          if (resp) return res.status(201).json({ success: true, data: JSON.stringify(resp.data)  })
-
+    // check if the order already creted before !!
+    const order = await Order.find({
+      course: bootcampId,
+      orderBy: req.user._id
+    })
+    console.log(order[0].charge)
+    if (order.length) {
+      // send Get request to Klarna API ( Read the oreder )
+      const resp = await axios.get(
+        'https://api.playground.klarna.com/checkout/v3/orders/' +
+          order[0].charge,
+        config
+      )
+      console.log(resp.data)
+      if (resp.data.status == 'checkout_complete') {
+        await order[0].updateOne({ orderStatus: 'Processed' })
       }
 
-    
-
+      if (resp)
+        return res
+          .status(201)
+          .json({ success: true, data: JSON.stringify(resp.data) })
+    }
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(500).json({
       message: 'Server Error' + error
     })
@@ -257,79 +296,76 @@ exports.ReadKlarnaOrder = async (req, res) => {
 
 //@ DESC GET/POST verify order
 //@ ROUTE /api/order/push/bootcampid
-//@ access public 
+//@ access public
 exports.PushOrder = async (req, res) => {
   const { data } = req.body
-  const {bootcampId , userId} = req.params
+  const { bootcampId, userId } = req.params
   const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
-
- 
-
-      // check if the order already creted before !! 
-      const order = await Order.find({ course:bootcampId , orderBy :userId})
-         // console.log( order[0].charge);
-      if (order.length){
-          // update the order status of verified 
-          await order[0].updateOne({orderStatus : 'Verified'})
-        console.log('Verified');
-          // respone with 200 
-        return res.status(200).json({ success: true})
-
-
-      }
-      console.log('ids : ',bootcampId , userId );
-      return res.status(404).json({ success: false})
-
+    // check if the order already creted before !!
+    const order = await Order.find({ course: bootcampId, orderBy: userId })
+    // console.log( order[0].charge);
+    if (order.length) {
+      // update the order status of verified
+      await order[0].updateOne({ orderStatus: 'Verified' })
+      console.log('Verified')
+      // respone with 200
+      return res.status(200).json({ success: true })
+    }
+    console.log('ids : ', bootcampId, userId)
+    return res.status(404).json({ success: false })
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(500).json({
       message: 'Server Error' + error
     })
   }
 }
 
-
-
 //@ DESC GET/POST capture order
 //@ ROUTE /api/order/capture/bootcampid
-//@ access public 
+//@ access public
 exports.captureOrder = async (req, res) => {
-  
-  const {bootcampId } = req.params
+  const { bootcampId } = req.params
   const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
-
-    const config = {withCredentials: true,
+    const config = {
+      withCredentials: true,
       auth: {
         username: process.env.REACT_APP_USERNAME,
         password: process.env.REACT_APP_PASS
-    },
+      },
       headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Credentials': true,
-                  } }
-
-      // check if the order already creted before !! 
-      const order = await Order.find({ course:bootcampId , orderBy :req.user._id})
-         
-      // send acknowled order 
-      const resp = await axios.post(`https://api.playground.klarna.com/ordermanagement/v1/orders/${order[0].charge}/acknowledge`,{},config)
-                  //console.log("acknowledge : ", resp );
-
-      if (order.length){
-          // update the order status of verified 
-          await order[0].updateOne({orderStatus : 'Delivered'})
-        console.log('Delivered');
-
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Credentials': true
       }
-      console.log('ids : ',bootcampId  );
-      return res.status(200).json({ success: true})
+    }
 
+    // check if the order already creted before !!
+    const order = await Order.find({
+      course: bootcampId,
+      orderBy: req.user._id
+    })
+
+    // send acknowled order
+    const resp = await axios.post(
+      `https://api.playground.klarna.com/ordermanagement/v1/orders/${order[0].charge}/acknowledge`,
+      {},
+      config
+    )
+    //console.log("acknowledge : ", resp );
+
+    if (order.length) {
+      // update the order status of verified
+      await order[0].updateOne({ orderStatus: 'Delivered' })
+      console.log('Delivered')
+    }
+    console.log('ids : ', bootcampId)
+    return res.status(200).json({ success: true })
   } catch (error) {
-    console.log(error);
+    console.log(error)
     res.status(500).json({
       message: 'Server Error' + error
     })
