@@ -403,7 +403,7 @@ exports.delete = async (req, res) => {
     })
     if (!answer)
       return res.status(404).json({
-        error: "Answer Doesn't  Exist "
+        message: "Answer Doesn't  Exist "
       })
 
     await answer.deleteOne()

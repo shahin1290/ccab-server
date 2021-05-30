@@ -56,7 +56,14 @@ exports.createOrder = async (req, res) => {
 
     const order = await newOrder.save()
 
-    if (order) return res.status(201).json({ success: true, data: order })
+    if (order) {
+      //update bootcamp students array
+      await Bootcamp.findByIdAndUpdate(order.course, {
+        $push: { students: user._id }
+      })
+
+      return res.status(201).json({ success: true, data: order })
+    }
   } catch (error) {
     res.status(500).json({
       message: 'Server Error' + error
@@ -106,7 +113,7 @@ exports.studentOrders = async (req, res) => {
     if (!studentOrders.length) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Order yet."
+        message: "You don't have any Order yet."
       })
     }
 
@@ -118,7 +125,7 @@ exports.studentOrders = async (req, res) => {
     console.log(error)
     return res.status(500).json({
       success: false,
-      error: 'Server error: ' + error.message
+      message: 'Server error: ' + error.message
     })
   }
 }
@@ -129,28 +136,30 @@ exports.studentOrders = async (req, res) => {
 exports.ViewOrder = async (req, res) => {
   const { bootcampId } = req.params
 
+
   try {
     const bootcamp = await Bootcamp.findById(bootcampId)
-    const order = await Order.find({
-      course: bootcampId,
+
+    const order = await Order.findOne({
+      course: bootcamp._id,
       orderBy: req.user._id
     })
 
-    if (!order.length) {
+    if (!order) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Order yet."
+        message: "You don't have any Order yet."
       })
     }
 
     return res.status(200).json({
       success: true,
-      data: order[0]
+      data: order
     })
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: 'Server error: ' + error.message
+      message: 'Server error: ' + error.message
     })
   }
 }
@@ -215,6 +224,12 @@ exports.createKlarnaOrder = async (req, res) => {
     })
 
     await newOrder.save()
+
+    //update bootcamp students array
+    await Bootcamp.findByIdAndUpdate(order.course, {
+      $push: { students: user._id }
+    })
+
     if (resp)
       return res
         .status(201)

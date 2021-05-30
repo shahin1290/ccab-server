@@ -254,7 +254,7 @@ exports.quizDetails = async (req, res) => {
     if (!quiz) {
       return res
         .status(404)
-        .json({ success: false, error: 'quiz is not found' })
+        .json({ success: false, message: 'quiz is not found' })
     }
     return res.status(200).json({
       success: true,
@@ -360,7 +360,7 @@ exports.deleteQuiz = async function (req, res) {
 
     if (!quiz) {
       return res.status(404).json({
-        error: "Quiz Doesn't  Exist "
+        message: "Quiz Doesn't  Exist "
       })
     }
 
@@ -398,7 +398,7 @@ exports.studentQuizzes = async (req, res) => {
     if (!studentQuizzes.length) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Quiz yet."
+        message: "You don't have any Quiz yet."
       })
     }
 

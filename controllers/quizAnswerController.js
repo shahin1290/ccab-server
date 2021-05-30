@@ -394,7 +394,7 @@ exports.deleteQuizAnswer = async function (req, res) {
     })
     if (!QuizAnswer)
       return res.status(404).json({
-        error: "QuizAnswer Doesn't  Exist "
+        message: "QuizAnswer Doesn't  Exist "
       })
 
     await quizAnswer.deleteOne()

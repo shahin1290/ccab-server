@@ -10,6 +10,7 @@ router
     grantAccess('readAny', 'order'),
     orderController.getAllOrders
   )
+router.route('/myorders').get(AllowIfLogin, orderController.studentOrders)
 
 router
   .route('/:bootcampId/klarna/order')
@@ -33,7 +34,5 @@ router
 router
   .route('/:bootcampId/stripe-payment-intent')
   .post(AllowIfLogin, orderController.stripePaymentIntent)
-
-router.route('/myorders').get(AllowIfLogin, orderController.studentOrders)
 
 module.exports = router

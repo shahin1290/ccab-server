@@ -56,6 +56,7 @@ exports.getTasks = async (req, res) => {
       tasks = await Task.find({ bootcamp: bootcamp._id }).populate('user name')
     }
 
+
     if (tasks.length === 0) {
       return res.status(404).json({
         success: false,
@@ -359,7 +360,7 @@ exports.studentTasks = async (req, res) => {
     if (!studentTasks.length) {
       return res.status(404).json({
         success: false,
-        error: "You don't have any Task yet."
+        message: "You don't have any Task yet."
       })
     }
 
@@ -415,7 +416,7 @@ exports.downloadFile = async (req, res, next) => {
 
     // check if answer is Not exist
     if (!assignment)
-      return res.status(404).json({ success: false, error: 'File Not found' })
+      return res.status(404).json({ success: false, message: 'File Not found' })
 
     //download the PDF file
     return res.download(assignment.path)
