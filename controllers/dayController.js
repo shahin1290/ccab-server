@@ -225,7 +225,7 @@ exports.view = async (req, res) => {
 // @ ROUTE /api/content/:weedId/:id
 //@ access Protected/Admin
 exports.update = async (req, res) => {
-  console.log(req.body)
+  console.log('req.body')
   const errors = getValidationResualt(req)
   if (errors)
     //returning only first error allways

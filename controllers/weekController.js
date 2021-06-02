@@ -51,7 +51,6 @@ exports.getWeeks = async (req, res) => {
         '-__v'
       ).populate('bootcamp')
 
-console.log(weeks);
       if (!isValidStudent && weeks[0].bootcamp.price >0) {
         return res.status(404).json({
           success: false,

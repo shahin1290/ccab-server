@@ -22,7 +22,7 @@ router
     quizController.getAllQuizzes
   )
 router
-  .route('/:bootcampId/:weekId')
+  .route('/:bootcampId/:dayId')
   .post(
     AllowIfLogin,
     grantAccess('createOwn', 'task'),
@@ -31,7 +31,7 @@ router
   )
 
 router
-  .route('/:bootcampId/:weekId/:id')
+  .route('/:bootcampId/:dayId/:id')
   .get(AllowIfLogin, grantAccess('readOwn', 'task'), quizController.quizDetails)
 
   .put(

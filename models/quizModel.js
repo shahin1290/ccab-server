@@ -12,9 +12,9 @@ const quizSchema = new mongoose.Schema({
     required: true
   },
   
-  week: {
+  day: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Week',
+    ref: 'Day',
     required: true
   },
 

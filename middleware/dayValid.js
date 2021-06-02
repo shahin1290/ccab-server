@@ -9,7 +9,10 @@ const dayValidCheck = [
 
 //Uploading File
 const Storge = multer.diskStorage({
+  
   destination: (req, file, callback) => {
+    console.log(file);
+
     callback(null, __dirname + '/../public/uploads/Source_Code')
   },
   filename: (req, file, callback) => {
@@ -49,7 +52,7 @@ const makeUpload = upload.fields([
 const uploadCallBack = (req, res, next) => {
   makeUpload(req, res, (err) => {
     if (err instanceof multer.MulterError) {
-      console.log('error multer ', err.message)
+      console.log('error multer ', req)
       return res.status(400).json({ success: false, message: err.message })
     } else if (err)
       return res
