@@ -18,7 +18,10 @@ exports.getDays = async (req, res) => {
   const { weekId } = req.params
   try {
     // check if the week 'show is true' return message the week is not upload it
-    const week = await Week.findById(weekId).populate('bootcamp', 'mentor price')
+    const week = await Week.findById(weekId).populate(
+      'bootcamp',
+      'mentor price'
+    )
 
     if (!week) {
       return res.status(404).json({
@@ -34,7 +37,7 @@ exports.getDays = async (req, res) => {
         req.user._id
       )
 
-      if (!isValidStudent && week.bootcamp.price >0) {
+      if (!isValidStudent && week.bootcamp.price > 0) {
         return res.status(404).json({
           success: false,
           message: 'Student is not enrolled in this bootcamp'
@@ -156,7 +159,10 @@ exports.view = async (req, res) => {
 
   try {
     //check if the week exists
-    const week = await Week.findById(weekId).populate('bootcamp', 'mentor price')
+    const week = await Week.findById(weekId).populate(
+      'bootcamp',
+      'mentor price'
+    )
     if (!week) {
       return res.status(404).json({
         success: false,
@@ -171,7 +177,7 @@ exports.view = async (req, res) => {
         req.user._id
       )
 
-      if (!isValidStudent && week.bootcamp.price >0) {
+      if (!isValidStudent && week.bootcamp.price > 0) {
         return res.status(404).json({
           success: false,
           message: 'Student is not enrolled in this bootcamp'
@@ -245,7 +251,8 @@ exports.update = async (req, res) => {
 
     //check if is the mentor for the bootcamp
     if (
-      (req.user.user_type === 'MentorUser'||req.user.user_type === 'AdminUser' ) &&
+      (req.user.user_type === 'MentorUser' ||
+        req.user.user_type === 'AdminUser') &&
       !req.user._id.equals(week.bootcamp.mentor)
     ) {
       return res.status(404).json({
@@ -302,12 +309,16 @@ exports.update = async (req, res) => {
       })
     }
 
+    const sections = source_code.length
+      ? [...day.sections, { name: req.body.title, source_code }]
+      : []
+
     const updatedObject = {
       name: req.body.name,
       video_path: req.files['video_path']
         ? req.files['video_path'][0].filename
         : req.body.video_path,
-      source_code
+      sections
     }
 
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {
