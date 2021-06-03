@@ -17,7 +17,7 @@ router
   .get(AllowIfLogin, grantAccess('readOwn', 'task'), taskController.getTasks)
 
 router
-  .route('/:bootcampId/:weekId')
+  .route('/:bootcampId/:dayId')
   .post(
     AllowIfLogin,
     grantAccess('createOwn', 'task'),

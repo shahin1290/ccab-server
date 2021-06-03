@@ -13,9 +13,9 @@ const taskSchema = new mongoose.Schema({
     ref: 'Bootcamp',
     required: true
   },
-  week: {
+  day: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Week',
+    ref: 'Day',
     required: true
   },
   projectName: {

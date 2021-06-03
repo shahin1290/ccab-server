@@ -1,7 +1,7 @@
 const Task = require('../models/taskModel')
 const { validationResult } = require('express-validator')
 const User = require('../models/userModel')
-const Week = require('../models/weekModel')
+const Day = require('../models/dayModel')
 const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
@@ -121,13 +121,13 @@ exports.new = async (req, res) => {
       })
     }
 
-    //check the week exists
-    const week = await Week.findById(req.params.weekId)
+    //check the day exists
+    const day = await Day.findById(req.params.dayId)
 
-    if (!week) {
+    if (!day) {
       return res.status(404).json({
         success: false,
-        message: 'No week found!'
+        message: 'No day found!'
       })
     }
 
@@ -138,7 +138,7 @@ exports.new = async (req, res) => {
       path: AssignmentFile.path,
       user: req.user._id,
       bootcamp: bootcamp._id,
-      week: week._id
+      day: day._id
     })
     await task.save()
 
@@ -149,7 +149,7 @@ exports.new = async (req, res) => {
       path: AssignmentFile.path,
       user: req.user._id,
       bootcamp: bootcamp._id,
-      week: week._id
+      day: day._id
     })
 
     //create empty answers for each student of this bootcamp for that quiz
@@ -223,13 +223,13 @@ exports.view = async (req, res) => {
       })
     }
 
-    /* //check the week exists
-    const week = await Week.findById(req.params.weekId)
+    /* //check the day exists
+    const day = await day.findById(req.params.dayId)
 
-    if (!week) {
+    if (!day) {
       return res.status(404).json({
         success: false,
-        message: 'No week found!'
+        message: 'No day found!'
       })
     } */
 
