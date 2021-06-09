@@ -30,6 +30,8 @@ exports.getDays = async (req, res) => {
       })
     }
 
+    let days
+
     //check if the student is enrolled in the bootcamp
     if (req.user.user_type === 'StudentUser') {
       const isValidStudent = await checkIfStudentValid(
@@ -43,20 +45,24 @@ exports.getDays = async (req, res) => {
           message: 'Student is not enrolled in this bootcamp'
         })
       }
+      days = await Day.find({ week: req.params.weekId, show: true })
     }
 
     //check if is the mentor for the bootcamp
-    if (
-      req.user.user_type === 'MentorUser' &&
-      !req.user._id.equals(week.bootcamp.mentor)
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: 'You are not allowed mentor for this bootcamp'
-      })
+    if (req.user.user_type === 'MentorUser') {
+      if (!req.user._id.equals(week.bootcamp.mentor)) {
+        return res.status(404).json({
+          success: false,
+          message: 'You are not allowed mentor for this bootcamp'
+        })
+      }
+      days = await Day.find({ week: req.params.weekId })
     }
 
-    const days = await Day.find({ week: req.params.weekId })
+    //check if is the mentor for the bootcamp
+    if (req.user.user_type === 'AdminUser') {
+      days = await Day.find({ week: req.params.weekId })
+    }
 
     if (days.lenght === 0) {
       return res.status(404).json({
@@ -170,6 +176,8 @@ exports.view = async (req, res) => {
       })
     }
 
+    let day
+
     //check if the student is enrolled in the bootcamp
     if (req.user.user_type === 'StudentUser') {
       const isValidStudent = await checkIfStudentValid(
@@ -183,21 +191,24 @@ exports.view = async (req, res) => {
           message: 'Student is not enrolled in this bootcamp'
         })
       }
+      day = await Day.findOne({ _id: id, show: true })
     }
 
     //check if is the mentor for the bootcamp
-    if (
-      req.user.user_type === 'MentorUser' &&
-      !req.user._id.equals(week.bootcamp.mentor)
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: 'You are not allowed mentor for this bootcamp'
-      })
+    if (req.user.user_type === 'MentorUser') {
+      if (!req.user._id.equals(week.bootcamp.mentor)) {
+        return res.status(404).json({
+          success: false,
+          message: 'You are not allowed mentor for this bootcamp'
+        })
+      }
+      day = await Day.findOne({ _id: id })
     }
 
-    //check if the day exists
-    const day = await Day.findById(id)
+    //check if is the mentor for the bootcamp
+    if (req.user.user_type === 'AdminUser') {
+      day = await Day.findOne({ _id: id })
+    }
 
     if (!day) {
       return res.status(404).json({
@@ -231,7 +242,6 @@ exports.view = async (req, res) => {
 // @ ROUTE /api/content/:weedId/:id
 //@ access Protected/Admin
 exports.update = async (req, res) => {
-  console.log('req.body')
   const errors = getValidationResualt(req)
   if (errors)
     //returning only first error allways
@@ -277,9 +287,8 @@ exports.update = async (req, res) => {
         message: 'The day is not found in that week'
       })
     }
-    
-    console.log(req.body);
 
+    console.log(req.body)
 
     const source_code = []
 
@@ -294,13 +303,16 @@ exports.update = async (req, res) => {
       })
     }
 
-
-   if (req.files && req.files['element_text'] && req.files['element_text'][0].filename) {
+    if (
+      req.files &&
+      req.files['element_text'] &&
+      req.files['element_text'][0].filename
+    ) {
       source_code.push({
         element_type: 'image',
         element_text: req.files['element_text'][0].filename
       })
-    } 
+    }
 
     if (req.body.code) {
       source_code.push({ element_type: 'code', element_text: req.body.code })
@@ -314,7 +326,6 @@ exports.update = async (req, res) => {
     }
 
     let sections
-
 
     if (
       source_code.length &&
@@ -333,7 +344,6 @@ exports.update = async (req, res) => {
 
     let updatedObject
 
-
     if (req.body.action === 'delete') {
       updatedObject = {
         name: req.body.name,
@@ -343,10 +353,12 @@ exports.update = async (req, res) => {
     } else
       updatedObject = {
         name: req.body.name,
-        video_path: req.files['video_path']
-          ? req.files['video_path'][0].filename
-          : req.body.video_path,
-        sections
+        video_path:
+          req.files && req.files['video_path']
+            ? req.files['video_path'][0].filename
+            : req.body.video_path,
+        sections,
+        show: req.body.show
       }
 
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {

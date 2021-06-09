@@ -16,6 +16,7 @@ const daySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  show: { type: Boolean, default: true },
 
   sections: [
     {

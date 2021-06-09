@@ -199,6 +199,7 @@ exports.newQuiz = async (req, res, next) => {
 //@route GET api/quiz/:id
 //@accesss private (allow for Admin, mentor, student)
 exports.quizDetails = async (req, res) => {
+
   try {
     //check the bootcamp exists
     const bootcamp = await Bootcamp.findById(req.params.bootcampId)
@@ -232,8 +233,9 @@ exports.quizDetails = async (req, res) => {
         message: 'You are not allowed mentor for this bootcamp'
       })
     }
+    
     //check the day exists
-    const day = await day.findById(req.params.dayId)
+    const day = await Day.findById(req.params.dayId)
 
     if (!day) {
       return res.status(404).json({
