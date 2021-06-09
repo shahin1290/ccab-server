@@ -277,6 +277,9 @@ exports.update = async (req, res) => {
         message: 'The day is not found in that week'
       })
     }
+    
+    console.log(req.body);
+
 
     const source_code = []
 
@@ -291,12 +294,13 @@ exports.update = async (req, res) => {
       })
     }
 
-    if (req.files['element_text'] && req.files['element_text'][0].filename) {
+
+   if (req.files && req.files['element_text'] && req.files['element_text'][0].filename) {
       source_code.push({
         element_type: 'image',
         element_text: req.files['element_text'][0].filename
       })
-    }
+    } 
 
     if (req.body.code) {
       source_code.push({ element_type: 'code', element_text: req.body.code })
@@ -309,17 +313,41 @@ exports.update = async (req, res) => {
       })
     }
 
-    const sections = source_code.length
-      ? [...day.sections, { name: req.body.title, source_code }]
-      : []
+    let sections
 
-    const updatedObject = {
-      name: req.body.name,
-      video_path: req.files['video_path']
-        ? req.files['video_path'][0].filename
-        : req.body.video_path,
-      sections
+
+    if (
+      source_code.length &&
+      day.sections.some((section) => section.name === req.body.section)
+    ) {
+      sections = day.sections.map((section) =>
+        section.name !== req.body.section
+          ? section
+          : { name: req.body.title, source_code }
+      )
+    } else {
+      sections = source_code.length
+        ? [...day.sections, { name: req.body.title, source_code }]
+        : [...day.sections]
     }
+
+    let updatedObject
+
+
+    if (req.body.action === 'delete') {
+      updatedObject = {
+        name: req.body.name,
+        video_path: req.body.video_path,
+        sections: req.body.sections
+      }
+    } else
+      updatedObject = {
+        name: req.body.name,
+        video_path: req.files['video_path']
+          ? req.files['video_path'][0].filename
+          : req.body.video_path,
+        sections
+      }
 
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {
       new: true
