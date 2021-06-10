@@ -17,7 +17,7 @@ exports.stripePaymentIntent = async (req, res) => {
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount * 100,
+      amount,
       currency,
       payment_method_types: [paymentMethodType]
     })
@@ -37,7 +37,7 @@ exports.stripePaymentIntent = async (req, res) => {
 //@ ROUTE /api/order/
 //@ access login user
 exports.createOrder = async (req, res) => {
-  const { token, amount } = req.body
+  const { token, amount, currency } = req.body
 
   const bootcamp = await Bootcamp.findById(req.params.bootcampId)
 
@@ -49,7 +49,7 @@ exports.createOrder = async (req, res) => {
       orderBy: user._id,
       amount: amount / 100,
       charge: token,
-      currency: 'USD',
+      currency,
       orderStatus: 'Delivered',
       method: 'Card'
     })
@@ -268,7 +268,6 @@ exports.readKlarnaSession = async (req, res) => {
 exports.createKlarnaOrder = async (req, res) => {
   const { data, token } = req.body
 
-  console.log(data);
 
   const bootcampId = req.params.bootcampId
   const bootcamp = await Bootcamp.findById(bootcampId)
