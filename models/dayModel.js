@@ -16,16 +16,22 @@ const daySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  show: { type: Boolean, default: true },
 
-  source_code: [
+  sections: [
     {
-      element_text: {
-        type: String
-      },
-      element_type: {
-        type: String,
-        enum: ['title', 'description', 'image', 'code']
-      }
+      name: { type: String, required: true },
+      source_code: [
+        {
+          element_text: {
+            type: String
+          },
+          element_type: {
+            type: String,
+            enum: ['title', 'description', 'image', 'code']
+          }
+        }
+      ]
     }
   ],
 

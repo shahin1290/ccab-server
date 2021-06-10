@@ -13,9 +13,20 @@ router
 router.route('/myorders').get(AllowIfLogin, orderController.studentOrders)
 
 router
+  .route('/:bootcampId/klarna/session')
+  .get( AllowIfLogin,orderController.readKlarnaSession)
+  .post(AllowIfLogin, orderController.createKlarnaSession)
+
+  router
+  .route('/:bootcampId/klarna/authorize')
+  .post( AllowIfLogin,orderController.readKlarnaSession)
+ 
+  
+
+router
   .route('/:bootcampId/klarna/order')
+  .get(AllowIfLogin, orderController.readKlarnaOrder)
   .post(AllowIfLogin, orderController.createKlarnaOrder)
-  .get(AllowIfLogin, orderController.ReadKlarnaOrder)
 
 router
   .route('/push/:bootcampId/:userId')
@@ -24,7 +35,7 @@ router
 
 router
   .route('/capture/:bootcampId')
-  .get(AllowIfLogin, orderController.captureOrder)
+  .post(AllowIfLogin, orderController.captureOrder)
 
 router
   .route('/:bootcampId')

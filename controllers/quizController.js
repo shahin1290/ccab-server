@@ -3,7 +3,7 @@ const Quiz = require('../models/quizModel')
 const QuizAnswer = require('../models/quizAnswerModel')
 const Bootcamp = require('../models/bootcampModel')
 const User = require('../models/userModel')
-const Week = require('../models/weekModel')
+const Day = require('../models/dayModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 const fs = require('fs')
 const { sendMail } = require('../middleware/snedMail')
@@ -129,13 +129,13 @@ exports.newQuiz = async (req, res, next) => {
       })
     }
 
-    //check the week exists
-    const week = await Week.findById(req.params.weekId)
+    //check the day exists
+    const day = await Day.findById(req.params.dayId)
 
-    if (!week) {
+    if (!day) {
       return res.status(404).json({
         success: false,
-        message: 'No week found!'
+        message: 'No Day found!'
       })
     }
 
@@ -147,7 +147,7 @@ exports.newQuiz = async (req, res, next) => {
       time,
       user: req.user._id,
       bootcamp: bootcamp._id,
-      week: week._id
+      day: day._id
     })
 
     await newQuiz.save()
@@ -159,7 +159,7 @@ exports.newQuiz = async (req, res, next) => {
       time,
       user: req.user._id,
       bootcamp: bootcamp._id,
-      week: week._id
+      day: day._id
     })
 
     //create empty answers for each student of this bootcamp for that quiz
@@ -199,6 +199,7 @@ exports.newQuiz = async (req, res, next) => {
 //@route GET api/quiz/:id
 //@accesss private (allow for Admin, mentor, student)
 exports.quizDetails = async (req, res) => {
+
   try {
     //check the bootcamp exists
     const bootcamp = await Bootcamp.findById(req.params.bootcampId)
@@ -232,13 +233,14 @@ exports.quizDetails = async (req, res) => {
         message: 'You are not allowed mentor for this bootcamp'
       })
     }
-    //check the week exists
-    const week = await Week.findById(req.params.weekId)
+    
+    //check the day exists
+    const day = await Day.findById(req.params.dayId)
 
-    if (!week) {
+    if (!day) {
       return res.status(404).json({
         success: false,
-        message: 'No week found!'
+        message: 'No day found!'
       })
     }
 
@@ -246,7 +248,7 @@ exports.quizDetails = async (req, res) => {
       {
         _id: req.params.id,
         bootcamp: bootcamp._id,
-        week: week._id
+        day: day._id
       },
       'createdAt name description time question.content question.answers'
     )
@@ -341,13 +343,13 @@ exports.deleteQuiz = async function (req, res) {
       })
     }
 
-    //check the week exists
-    const week = await Week.findById(req.params.weekId)
+    //check the day exists
+    const day = await Day.findById(req.params.dayId)
 
-    if (!week) {
+    if (!day) {
       return res.status(404).json({
         success: false,
-        message: 'No week found!'
+        message: 'No day found!'
       })
     }
 
@@ -355,7 +357,7 @@ exports.deleteQuiz = async function (req, res) {
       _id: req.params.id,
       user: req.user._id,
       bootcamp: bootcamp._id,
-      week: week._id
+      day: day._id
     })
 
     if (!quiz) {
