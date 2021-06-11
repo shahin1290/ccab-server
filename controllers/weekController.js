@@ -41,17 +41,19 @@ exports.getWeeks = async (req, res) => {
     })
 
     //find the weeks for the specific bootcamp
-    let weeks = await Week.find({ bootcamp: bootcampId }).select('-__v')
+    let weeks = await Week.find({ bootcamp: bootcampId })
+      .populate('bootcamp')
+      .populate({path: 'days', model: 'Day'})
 
     //check if the student is enrolled in the bootcamp
     if (req.user.user_type === 'StudentUser') {
       const isValidStudent = await checkIfStudentValid(bootcampId, req.user._id)
 
-      weeks = await Week.find({ bootcamp: bootcampId, show: true }).select(
-        '-__v'
-      ).populate('bootcamp')
+      weeks = await Week.find({ bootcamp: bootcampId, show: true })
+        .populate('bootcamp')
+        .populate({path: 'days', model: 'Day'})
 
-      if (!isValidStudent && weeks[0].bootcamp.price >0) {
+      if (!isValidStudent && weeks[0].bootcamp.price > 0) {
         return res.status(404).json({
           success: false,
           message: 'Student is not enrolled in this bootcamp'
@@ -116,7 +118,7 @@ exports.new = async (req, res) => {
 // @ ROUTE /api/weeks/:bootcampId
 //@ access Protected/Admin, mentor and student
 exports.updateWeekShow = async (req, res) => {
-  console.log(req.params);
+  console.log(req.params)
   try {
     const { bootcampId } = req.params
 

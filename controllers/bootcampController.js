@@ -37,6 +37,7 @@ const createNewWeeks = async (updatedBootcamp) => {
 //********** createNewWeeks  ************
 const createNewDays = async (updatedBootcamp) => {
   for (let i = 1; i <= updatedBootcamp.weeks; i++) {
+    const dayArr = []
     const week = await Week.findOne({
       name: `week${i}`,
       bootcamp: updatedBootcamp._id
@@ -49,8 +50,10 @@ const createNewDays = async (updatedBootcamp) => {
         video_path:
           'https://player.vimeo.com/video/243885948?color=ffffff&title=0&byline=0&portrait=0'
       })
-      await newDay.save()
+      const savedDay = await newDay.save()
+      dayArr.push(savedDay._id)
     }
+    await Week.findByIdAndUpdate(week._id, {days: dayArr})
   }
 }
 
