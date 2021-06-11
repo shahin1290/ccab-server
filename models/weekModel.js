@@ -10,7 +10,14 @@ const weekSchema = new mongoose.Schema({
     required: true,
     ref: 'Bootcamp'
   },
-  show: { type: Boolean, default: false }
+  show: { type: Boolean, default: false },
+
+  days: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Day'
+    }
+  ]
 })
 
 module.exports = mongoose.model('Week', weekSchema)
