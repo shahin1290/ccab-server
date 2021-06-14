@@ -342,16 +342,17 @@ exports.deleteBootcamp = async function (req, res) {
       await Day.deleteMany({ week: week._id })
 
       days.forEach(async (day) => {
-        fs.unlinkSync(day.video_path)
+        //fs.unlinkSync(day.video_path)
 
         //check if day contains any image reference
-        const imageElemntArr = day.source_code.filter(
+
+        const imageElemntArr = day.source_code&&day.source_code.filter(
           (item) => item.element_type === 'image'
         )
-
+           // console.log(imageElemntArr);
         //remove image from public folder
-        if (imageElemntArr.length > 0) {
-          imageElemntArr.forEach((el) => fs.unlinkSync(el.element_text))
+        if (imageElemntArr&&imageElemntArr.length) {
+          imageElemntArr.forEach((el) => fs.unlinkSync(el.element_text,(err)=>{console.log(err);}))
         }
       })
     })
