@@ -3,15 +3,13 @@ const express = require('express')
 const bodyparser = require('body-parser')
 const morgan = require('morgan')
 const path = require('path')
-const Bootcamp = require('./models/bootcampModel')
-const Week = require('./models/weekModel')
-const User = require('./models/userModel')
-const {sendContactMail} = require('./util/contactMail')
+const { sendContactMail } = require('./util/contactMail')
 const app = express()
-var cron = require('node-cron')
 var cors = require('cors')
 const PORT = process.env.PORT || process.env.SERVER_PORT
 const myDb = require('./database/db')
+const axios = require('axios')
+
 myDb()
 
 app.use(morgan('dev'))
@@ -34,6 +32,39 @@ app.post('/contact', (req, res, next) => {
     res.send('MESSAGE IS SUCCESSFULLY SENT')
   } catch (err) {
     res.send(err)
+  }
+})
+
+//get currency and geo location
+app.get('/currency-convert', async (req, res, next) => {
+  try {
+    const response = await axios.get('https://ipapi.co/json/')
+
+    const apiKey = '0d65e80400de77684ec5'
+
+    const fromCurrency = 'USD'
+    const toCurrency = response.data.currency
+    const query = fromCurrency + '_' + toCurrency
+
+    const url =
+      'https://free.currconv.com/api/v7/convert?q=' +
+      query +
+      '&compact=ultra&apiKey=' +
+      apiKey
+
+    const resp = await axios.get(url)
+
+    const amount = Math.round(resp.data[query] * 100) / 100
+
+    return res.status(200).json({
+      success: true,
+      data: { currency: toCurrency, amount, country: response.data.country }
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      message: error
+    })
   }
 })
 

@@ -4,13 +4,6 @@ const Order = require('../models/orderModel')
 const Bootcamp = require('../models/bootcampModel')
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const axios = require('axios')
-//********** Validation Result ************
-
-function getValidationResualt(req) {
-  const error = validationResult(req)
-  if (!error.isEmpty()) return error.array()
-  return false
-}
 
 exports.stripePaymentIntent = async (req, res) => {
   const { paymentMethodType, currency, amount } = req.body
@@ -210,8 +203,6 @@ exports.createKlarnaSession = async (req, res) => {
       config
     )
 
-  
-
     if (resp)
       return res
         .status(201)
@@ -268,7 +259,6 @@ exports.readKlarnaSession = async (req, res) => {
 exports.createKlarnaOrder = async (req, res) => {
   const { data, token } = req.body
 
-
   const bootcampId = req.params.bootcampId
   const bootcamp = await Bootcamp.findById(bootcampId)
 
@@ -291,8 +281,7 @@ exports.createKlarnaOrder = async (req, res) => {
       `https://api.klarna.com/payments/v1/authorizations/${token}/order`,
       data,
       config
-    ) 
-
+    )
 
     //save new order
     const user = await User.findById(req.user._id)
@@ -303,10 +292,10 @@ exports.createKlarnaOrder = async (req, res) => {
       amount: data.order_amount / 100,
       charge: resp.data.order_id,
       currency: data.purchase_currency,
-      method: 'Klarna',
+      method: 'Klarna'
     })
 
-    await newOrder.save() 
+    await newOrder.save()
 
     //update bootcamp students array
     await Bootcamp.findByIdAndUpdate(newOrder.course, {
