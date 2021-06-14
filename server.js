@@ -36,14 +36,14 @@ app.post('/contact', (req, res, next) => {
 })
 
 //get currency and geo location
-app.get('/currency-convert', async (req, res, next) => {
+app.post('/currency-convert', async (req, res, next) => {
   try {
-    const response = await axios.get('https://ipapi.co/json/')
+    const { currency } = req.body
 
     const apiKey = '0d65e80400de77684ec5'
 
     const fromCurrency = 'USD'
-    const toCurrency = response.data.currency
+    const toCurrency = currency
     const query = fromCurrency + '_' + toCurrency
 
     const url =
@@ -58,7 +58,7 @@ app.get('/currency-convert', async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: { currency: toCurrency, amount, country: response.data.country }
+      data: amount
     })
   } catch (error) {
     console.log(error)
