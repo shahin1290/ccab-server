@@ -38,7 +38,7 @@ app.post('/contact', (req, res, next) => {
 //get currency and geo location
 app.post('/currency-convert', async (req, res, next) => {
   try {
-    const { currency } = req.body
+    const { currency, country } = req.body
 
     const apiKey = '0d65e80400de77684ec5'
 
@@ -58,7 +58,7 @@ app.post('/currency-convert', async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: amount
+      data: { amount, country, currency }
     })
   } catch (error) {
     console.log(error)
