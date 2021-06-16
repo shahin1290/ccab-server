@@ -32,15 +32,17 @@ exports.stripePaymentIntent = async (req, res) => {
 exports.createOrder = async (req, res) => {
   const { token, amount, currency } = req.body
 
-  const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+  const { id } = req.params
 
   try {
     const user = await User.findById(req.user._id)
 
+    const bootcamp = await Bootcamp.findById(id)
+
     const newOrder = new Order({
-      course: bootcamp._id,
+      course: bootcamp ? bootcamp.name : id,
       orderBy: user._id,
-      amount: amount / 100,
+      amount: Number(amount) / 100,
       charge: token,
       currency,
       orderStatus: 'Delivered',
@@ -49,12 +51,17 @@ exports.createOrder = async (req, res) => {
 
     const order = await newOrder.save()
 
-    if (order) {
+    if (
+      (order._id && id === 'basic') ||
+      (order._id && id === 'standard') ||
+      (order._id && id === 'premium')
+    ) {
+      return res.status(201).json({ success: true, data: order })
+    } else {
       //update bootcamp students array
-      await Bootcamp.findByIdAndUpdate(order.course, {
+      await Bootcamp.findByIdAndUpdate(id, {
         $push: { students: user._id }
       })
-
       return res.status(201).json({ success: true, data: order })
     }
   } catch (error) {
@@ -70,7 +77,6 @@ exports.createOrder = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
-      .populate('course', 'name')
       .populate('orderBy')
 
     if (!orders.length) {
@@ -99,7 +105,6 @@ exports.getAllOrders = async (req, res) => {
 exports.studentOrders = async (req, res) => {
   try {
     const studentOrders = await Order.find({ orderBy: req.user._id }).populate(
-      'course',
       'name'
     )
 
@@ -127,13 +132,13 @@ exports.studentOrders = async (req, res) => {
 //@ ROUTE /api/order/:bootcampId
 //@ access login user
 exports.ViewOrder = async (req, res) => {
-  const { bootcampId } = req.params
+  const { id } = req.params
 
   try {
-    const bootcamp = await Bootcamp.findById(bootcampId)
+    const bootcamp = await Bootcamp.findById(id)
 
     const order = await Order.findOne({
-      course: bootcamp._id,
+      course: bootcamp.name,
       orderBy: req.user._id
     })
 

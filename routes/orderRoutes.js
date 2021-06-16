@@ -38,12 +38,12 @@ router
   .post(AllowIfLogin, orderController.captureOrder)
 
 router
-  .route('/:bootcampId')
+  .route('/:id')
   .post(AllowIfLogin, orderController.createOrder)
   .get(AllowIfLogin, orderController.ViewOrder)
 
 router
-  .route('/:bootcampId/stripe-payment-intent')
+  .route('/stripe/stripe-payment-intent')
   .post(AllowIfLogin, orderController.stripePaymentIntent)
 
 module.exports = router
