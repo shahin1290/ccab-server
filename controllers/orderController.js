@@ -39,13 +39,9 @@ exports.createOrder = async (req, res) => {
 
     let course
 
-    if (
-      (id === 'basic') ||
-      (id === 'standard') ||
-      (id === 'premium')
-    ){
+    if (id === 'basic' || id === 'standard' || id === 'premium') {
       course = id
-    }else {
+    } else {
       const bootcamp = await Bootcamp.findById(id)
       course = bootcamp.name
     }
@@ -59,7 +55,6 @@ exports.createOrder = async (req, res) => {
       orderStatus: 'Delivered',
       method: 'Card'
     })
-
 
     const order = await newOrder.save()
 
@@ -146,10 +141,17 @@ exports.ViewOrder = async (req, res) => {
   const { id } = req.params
 
   try {
-    const bootcamp = await Bootcamp.findById(id)
+    let course
+
+    if (id === 'basic' || id === 'standard' || id === 'premium') {
+      course = id
+    } else {
+      const bootcamp = await Bootcamp.findById(id)
+      course = bootcamp.name
+    }
 
     const order = await Order.findOne({
-      course: bootcamp.name,
+      course,
       orderBy: req.user._id
     })
 
@@ -277,7 +279,6 @@ exports.createKlarnaOrder = async (req, res) => {
   const bootcampId = req.params.bootcampId
 
   try {
-
     const config = {
       withCredentials: true,
       auth: {
@@ -304,12 +305,12 @@ exports.createKlarnaOrder = async (req, res) => {
     let course
 
     if (
-      (bootcampId === 'basic') ||
-      (bootcampId === 'standard') ||
-      (bootcampId === 'premium')
-    ){
+      bootcampId === 'basic' ||
+      bootcampId === 'standard' ||
+      bootcampId === 'premium'
+    ) {
       course = bootcampId
-    }else {
+    } else {
       const bootcamp = await Bootcamp.findById(bootcampId)
       course = bootcamp.name
     }
