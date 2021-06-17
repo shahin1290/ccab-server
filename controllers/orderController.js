@@ -32,15 +32,24 @@ exports.stripePaymentIntent = async (req, res) => {
 exports.createOrder = async (req, res) => {
   const { token, amount, currency } = req.body
 
-  const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+  const { id } = req.params
 
   try {
     const user = await User.findById(req.user._id)
 
+    let course
+
+    if (id === 'basic' || id === 'standard' || id === 'premium') {
+      course = id
+    } else {
+      const bootcamp = await Bootcamp.findById(id)
+      course = bootcamp.name
+    }
+
     const newOrder = new Order({
-      course: bootcamp._id,
+      course,
       orderBy: user._id,
-      amount: amount / 100,
+      amount: Number(amount) / 100,
       charge: token,
       currency,
       orderStatus: 'Delivered',
@@ -49,12 +58,17 @@ exports.createOrder = async (req, res) => {
 
     const order = await newOrder.save()
 
-    if (order) {
+    if (
+      (order._id && id === 'basic') ||
+      (order._id && id === 'standard') ||
+      (order._id && id === 'premium')
+    ) {
+      return res.status(201).json({ success: true, data: order })
+    } else {
       //update bootcamp students array
-      await Bootcamp.findByIdAndUpdate(order.course, {
+      await Bootcamp.findByIdAndUpdate(id, {
         $push: { students: user._id }
       })
-
       return res.status(201).json({ success: true, data: order })
     }
   } catch (error) {
@@ -69,9 +83,7 @@ exports.createOrder = async (req, res) => {
 //@ access login Admin
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({})
-      .populate('course', 'name')
-      .populate('orderBy')
+    const orders = await Order.find({}).populate('orderBy')
 
     if (!orders.length) {
       return res.status(404).json({
@@ -99,7 +111,6 @@ exports.getAllOrders = async (req, res) => {
 exports.studentOrders = async (req, res) => {
   try {
     const studentOrders = await Order.find({ orderBy: req.user._id }).populate(
-      'course',
       'name'
     )
 
@@ -127,13 +138,20 @@ exports.studentOrders = async (req, res) => {
 //@ ROUTE /api/order/:bootcampId
 //@ access login user
 exports.ViewOrder = async (req, res) => {
-  const { bootcampId } = req.params
+  const { id } = req.params
 
   try {
-    const bootcamp = await Bootcamp.findById(bootcampId)
+    let course
+
+    if (id === 'basic' || id === 'standard' || id === 'premium') {
+      course = id
+    } else {
+      const bootcamp = await Bootcamp.findById(id)
+      course = bootcamp.name
+    }
 
     const order = await Order.findOne({
-      course: bootcamp._id,
+      course,
       orderBy: req.user._id
     })
 
@@ -161,7 +179,6 @@ exports.ViewOrder = async (req, res) => {
 //@ access login user
 exports.createKlarnaSession = async (req, res) => {
   const { data } = req.body
-  const bootcampId = req.params.bootcampId
 
   try {
     const config = {
@@ -260,7 +277,6 @@ exports.createKlarnaOrder = async (req, res) => {
   const { data, token } = req.body
 
   const bootcampId = req.params.bootcampId
-  const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
     const config = {
@@ -286,8 +302,21 @@ exports.createKlarnaOrder = async (req, res) => {
     //save new order
     const user = await User.findById(req.user._id)
 
+    let course
+
+    if (
+      bootcampId === 'basic' ||
+      bootcampId === 'standard' ||
+      bootcampId === 'premium'
+    ) {
+      course = bootcampId
+    } else {
+      const bootcamp = await Bootcamp.findById(bootcampId)
+      course = bootcamp.name
+    }
+
     const newOrder = new Order({
-      course: bootcamp._id,
+      course,
       orderBy: user._id,
       amount: data.order_amount / 100,
       charge: resp.data.order_id,
@@ -295,17 +324,22 @@ exports.createKlarnaOrder = async (req, res) => {
       method: 'Klarna'
     })
 
-    await newOrder.save()
+    const order = await newOrder.save()
 
     //update bootcamp students array
-    await Bootcamp.findByIdAndUpdate(newOrder.course, {
-      $push: { students: user._id }
-    })
-
-    if (resp)
-      return res
-        .status(201)
-        .json({ success: true, data: JSON.stringify(resp.data) })
+    if (
+      (order._id && bootcampId === 'basic') ||
+      (order._id && bootcampId === 'standard') ||
+      (order._id && bootcampId === 'premium')
+    ) {
+      return res.status(201).json({ success: true, data: order })
+    } else {
+      //update bootcamp students array
+      await Bootcamp.findByIdAndUpdate(bootcampId, {
+        $push: { students: user._id }
+      })
+      return res.status(201).json({ success: true, data: order })
+    }
   } catch (error) {
     console.log('error', error.message)
     res.status(500).json({
@@ -319,9 +353,21 @@ exports.createKlarnaOrder = async (req, res) => {
 //@ access login user
 exports.readKlarnaOrder = async (req, res) => {
   const bootcampId = req.params.bootcampId
-  const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
+    let course
+
+    if (
+      bootcampId === 'basic' ||
+      bootcampId === 'standard' ||
+      bootcampId === 'premium'
+    ) {
+      course = bootcampId
+    } else {
+      const bootcamp = await Bootcamp.findById(bootcampId)
+      course = bootcamp.name
+    }
+
     const config = {
       withCredentials: true,
       auth: {
@@ -336,7 +382,7 @@ exports.readKlarnaOrder = async (req, res) => {
 
     // check if the order already creted before !!
     const order = await Order.findOne({
-      course: bootcampId,
+      course,
       orderBy: req.user._id
     })
 
@@ -352,7 +398,6 @@ exports.readKlarnaOrder = async (req, res) => {
       `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}`,
       config
     )
-    console.log(resp.data)
     if (resp.data.fraud_status == 'ACCEPTED') {
       await order.updateOne({ orderStatus: 'Verified' })
     }
@@ -409,7 +454,6 @@ exports.PushOrder = async (req, res) => {
 //@ access public
 exports.captureOrder = async (req, res) => {
   const { bootcampId } = req.params
-  const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
     const config = {
@@ -430,12 +474,12 @@ exports.captureOrder = async (req, res) => {
       orderBy: req.body.orderBy
     })
 
-    console.log(order)
+    const amount = Math.round(order.amount)
 
     // send acknowled order
     const resp = await axios.post(
       `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
-      { captured_amount: order.amount },
+      { captured_amount: amount },
       config
     )
     //console.log("acknowledge : ", resp );
@@ -443,9 +487,7 @@ exports.captureOrder = async (req, res) => {
     if (order) {
       // update the order status of verified
       await order.updateOne({ orderStatus: 'Delivered' })
-      console.log('Delivered')
     }
-    console.log('ids : ', bootcampId)
     return res.status(200).json({ success: true })
   } catch (error) {
     console.log(error)
