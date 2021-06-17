@@ -476,8 +476,6 @@ exports.captureOrder = async (req, res) => {
 
     const amount = Math.round(order.amount)
 
-    console.log(amount)
-
     // send acknowled order
     const resp = await axios.post(
       `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
@@ -489,7 +487,6 @@ exports.captureOrder = async (req, res) => {
     if (order) {
       // update the order status of verified
       await order.updateOne({ orderStatus: 'Delivered' })
-      console.log('Delivered')
     }
     return res.status(200).json({ success: true })
   } catch (error) {
