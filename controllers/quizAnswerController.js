@@ -340,7 +340,7 @@ exports.updateQuizAnswer = async function (req, res) {
         ' ' +
         updatedQuizAnswer.quiz.name +
         ' assignment.<br><br> <b>You can Check the new grade by logging in to your profile OR Click below!</b>',
-      link: 'http://batch22server.ccab.tech/profile'
+      link: 'https://ccab.tech/profile'
     }
     const mailStatus = sendMail(res, toUser, subjet, html)
 

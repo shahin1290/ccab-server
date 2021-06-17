@@ -180,7 +180,7 @@ exports.newQuiz = async (req, res, next) => {
         student: '',
         text: 'We want to inform you that a new quiz has been added ',
         assignment: ' ' + savedQuiz.name + ' Quiz.<br>',
-        link: 'http://batch22server.ccab.tech/quiz/' + savedQuiz._id
+        link: 'https://ccab.tech/quiz/' + savedQuiz._id
       }
 
       var mailStatus = sendMail(res, toUser, subjet, html)

@@ -109,7 +109,7 @@ exports.addNewAnswer = async (req, res) => {
       text: 'has submited the ',
       assignment: ' ' + answer.task.projectName + ' assignment.<br>',
       link:
-        'http://batch22server.ccab.tech/admin/taskdetails/' + answer.task._id
+        'https://ccab.tech/admin/taskdetails/' + answer.task._id
     }
     const mailStatus = sendMail(res, toUser, subjet, html)
 
@@ -503,7 +503,7 @@ exports.updateAnswerStatus = async (req, res) => {
         ' ' +
         answer.task.projectName +
         ' assignment.<br><br> <b>You can Check the new grade by logging in to your profile OR Click below!</b>',
-      link: 'http://batch22server.ccab.tech/profile'
+      link: 'https://ccab.tech/profile'
     }
     const mailStatus = sendMail(res, toUser, subjet, html)
 

@@ -103,7 +103,7 @@ cron.schedule('* * * * *', async () => {
         student: '',
         text:
           'We want to inform you that Bootcamp content for this week is now opened ',
-        link: 'http://batch22server.ccab.tech/quiz/'
+        link: 'https://ccab.tech/quiz/'
       }
 
       sendMail( toUser, subjet, html)
