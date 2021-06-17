@@ -19,6 +19,9 @@ exports.roles = (()=>{
         .readOwn('Answer')
         .updateOwn('Answer')
 
+        //request
+        .readOwn('request')
+
     // Viewer user
     ac.grant("ViewerUser")
         .readAny('profile')
@@ -84,6 +87,10 @@ exports.roles = (()=>{
         .updateAny("task")
         //orders 
         .readAny("order")
-    
+        //requests
+        .readAny("request")
+        .createAny("request")
+        .updateAny("request")
+        .deleteAny("request")
     return ac;
 })();
