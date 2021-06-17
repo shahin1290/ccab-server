@@ -353,9 +353,21 @@ exports.createKlarnaOrder = async (req, res) => {
 //@ access login user
 exports.readKlarnaOrder = async (req, res) => {
   const bootcampId = req.params.bootcampId
-  const bootcamp = await Bootcamp.findById(bootcampId)
 
   try {
+    let course
+
+    if (
+      bootcampId === 'basic' ||
+      bootcampId === 'standard' ||
+      bootcampId === 'premium'
+    ) {
+      course = bootcampId
+    } else {
+      const bootcamp = await Bootcamp.findById(bootcampId)
+      course = bootcamp.name
+    }
+
     const config = {
       withCredentials: true,
       auth: {
@@ -370,7 +382,7 @@ exports.readKlarnaOrder = async (req, res) => {
 
     // check if the order already creted before !!
     const order = await Order.findOne({
-      course: bootcampId,
+      course,
       orderBy: req.user._id
     })
 
@@ -386,7 +398,6 @@ exports.readKlarnaOrder = async (req, res) => {
       `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}`,
       config
     )
-    console.log(resp.data)
     if (resp.data.fraud_status == 'ACCEPTED') {
       await order.updateOne({ orderStatus: 'Verified' })
     }
@@ -463,10 +474,14 @@ exports.captureOrder = async (req, res) => {
       orderBy: req.body.orderBy
     })
 
+    const amount = Math.round(order.amount)
+
+    console.log(amount)
+
     // send acknowled order
     const resp = await axios.post(
       `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
-      { captured_amount: order.amount },
+      { captured_amount: amount },
       config
     )
     //console.log("acknowledge : ", resp );
