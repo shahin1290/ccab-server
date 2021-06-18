@@ -20,7 +20,10 @@ exports.getRequests = async (req, res) => {
     console.log(await Request.findOne({ requestedUser: req.user._id }))
 
     if (req.user.user_type === 'AdminUser') {
-      requests = await Request.find().populate('requestedUser', 'name email _id')
+      requests = await Request.find().populate(
+        'requestedUser',
+        'name email _id'
+      )
     }
 
     if (req.user.user_type === 'StudentUser') {
@@ -124,57 +127,24 @@ exports.updateWeekShow = async (req, res) => {
 // @ ROUTE /api/weeks/bootcampId/:weekId
 //@ access Protected/Admin, Mentor and Student
 exports.view = async (req, res) => {
+  const { id } = req.params
   try {
-    const { weekId, bootcampId } = req.params
+    const request = await Request.findById(id)
 
-    //check if bootcamp exists
-    const bootcamp = await Bootcamp.findById(bootcampId)
-    if (!bootcamp) {
+    console.log('r', id);
+
+    if (!request) {
       return res.status(404).json({
         success: false,
-        message: 'No bootcamp found!'
+        message: 'No request found!'
       })
     }
 
-    //check if the week exists for that bootcamp
-    let week = await Week.findOne({ _id: weekId, bootcamp: bootcampId })
-
-    //check if the student is enrolled in the bootcamp
-    if (req.user.user_type === 'StudentUser') {
-      const isValidStudent = await checkIfStudentValid(
-        week.bootcamp,
-        req.user._id
-      )
-
-      week = await Week.findOne({
-        _id: weekId,
-        bootcamp: bootcampId,
-        show: true
-      })
-
-      if (!isValidStudent) {
-        return res.status(404).json({
-          success: false,
-          message: 'Student is not enrolled in this bootcamp'
-        })
-      }
-    }
-
-    if (!week) {
-      return res.status(404).json({
-        success: false,
-        message: 'No week found!'
-      })
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: week
-    })
+    return res.status(201).json({ success: true, data: request })
   } catch (error) {
-    console.log(error.message)
+    console.log(error)
     res.status(500).json({
-      message: 'server Error' + error
+      message: 'Server Error' + error
     })
   }
 }

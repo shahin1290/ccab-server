@@ -8,9 +8,10 @@ const axios = require('axios')
 exports.stripePaymentIntent = async (req, res) => {
   const { paymentMethodType, currency, amount } = req.body
 
+
   try {
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: Math.round(amount),
       currency,
       payment_method_types: [paymentMethodType]
     })
@@ -39,7 +40,7 @@ exports.createOrder = async (req, res) => {
 
     let course
 
-    if (id === 'basic' || id === 'standard' || id === 'premium') {
+    if (id === 'Basic Plan' || id === 'Standard Plan' || id === 'Premium Plan') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -59,9 +60,9 @@ exports.createOrder = async (req, res) => {
     const order = await newOrder.save()
 
     if (
-      (order._id && id === 'basic') ||
-      (order._id && id === 'standard') ||
-      (order._id && id === 'premium')
+      (order._id && id === 'Basic Plan') ||
+      (order._id && id === 'Standard Plan') ||
+      (order._id && id === 'Premium Plan')
     ) {
       return res.status(201).json({ success: true, data: order })
     } else {
@@ -143,7 +144,7 @@ exports.ViewOrder = async (req, res) => {
   try {
     let course
 
-    if (id === 'basic' || id === 'standard' || id === 'premium') {
+    if (id === 'Basic Plan' || id === 'Standard Plan' || id === 'Premium Plan') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -278,6 +279,7 @@ exports.createKlarnaOrder = async (req, res) => {
 
   const bootcampId = req.params.bootcampId
 
+
   try {
     const config = {
       withCredentials: true,
@@ -305,9 +307,9 @@ exports.createKlarnaOrder = async (req, res) => {
     let course
 
     if (
-      bootcampId === 'basic' ||
-      bootcampId === 'standard' ||
-      bootcampId === 'premium'
+      bootcampId === 'Basic Plan' ||
+      bootcampId === 'Standard Plan' ||
+      bootcampId === 'Premium Plan'
     ) {
       course = bootcampId
     } else {
@@ -328,9 +330,9 @@ exports.createKlarnaOrder = async (req, res) => {
 
     //update bootcamp students array
     if (
-      (order._id && bootcampId === 'basic') ||
-      (order._id && bootcampId === 'standard') ||
-      (order._id && bootcampId === 'premium')
+      (order._id && bootcampId === 'Basic Plan') ||
+      (order._id && bootcampId === 'Standard Plan') ||
+      (order._id && bootcampId === 'Premium Plan')
     ) {
       return res.status(201).json({ success: true, data: order })
     } else {
@@ -358,9 +360,9 @@ exports.readKlarnaOrder = async (req, res) => {
     let course
 
     if (
-      bootcampId === 'basic' ||
-      bootcampId === 'standard' ||
-      bootcampId === 'premium'
+      bootcampId === 'Basic Plan' ||
+      bootcampId === 'Standard Plan' ||
+      bootcampId === 'Premium Plan'
     ) {
       course = bootcampId
     } else {
