@@ -54,7 +54,7 @@ app.post('/currency-convert', async (req, res, next) => {
 
     const resp = await axios.get(url)
 
-    const amount = Math.round(resp.data[query] * 100) / 100
+    const amount = resp.data[query]
 
     return res.status(200).json({
       success: true,
