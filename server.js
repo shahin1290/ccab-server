@@ -40,7 +40,7 @@ app.post('/currency-convert', async (req, res, next) => {
   try {
     const { currency, country } = req.body
 
-    const apiKey = '230d7f66fcc54d2cf6de'
+    const apiKey = '6068a971e6754bdf9d3b0ddc706779b0'
 
     const fromCurrency = 'USD'
     const toCurrency = currency
@@ -103,7 +103,7 @@ cron.schedule('* * * * *', async () => {
         student: '',
         text:
           'We want to inform you that Bootcamp content for this week is now opened ',
-        link: 'https://ccab.tech/quiz/'
+        link: 'http://batch22server.ccab.tech/quiz/'
       }
 
       sendMail( toUser, subjet, html)

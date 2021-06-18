@@ -129,9 +129,10 @@ exports.updateWeekShow = async (req, res) => {
 exports.view = async (req, res) => {
   const { id } = req.params
   try {
-    const request = await Request.findById(id)
-
-    console.log('r', id);
+    const request = await Request.findById(id).populate(
+      'requestedUser',
+      'name email _id'
+    )
 
     if (!request) {
       return res.status(404).json({
@@ -153,59 +154,17 @@ exports.view = async (req, res) => {
 // @ ROUTE /api/weeks/:bootcampId/:weekId
 //@ access Protected/Admin and mentor
 exports.update = async (req, res) => {
-  const errors = getValidationResualt(req)
-  if (errors)
-    //returning only first error allways
-    return res.status(400).json({ success: false, message: errors[0].msg })
-
   try {
-    const { weekId, bootcampId } = req.params
+    const { id } = req.params
 
-    //check if bootcamp exists
-    const bootcamp = await Bootcamp.findById(bootcampId)
-    if (!bootcamp) {
-      return res.status(404).json({
-        success: false,
-        message: 'No bootcamp found!'
-      })
-    }
-
-    //check if is the mentor for the bootcamp
-    if (
-      req.user.user_type === 'MentorUser' &&
-      !req.user._id.equals(bootcamp.mentor)
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: 'You are not allowed mentor for this bootcamp'
-      })
-    }
-
-    //check if the week exists
-    const week = await Week.findById(weekId)
-
-    if (!week) {
-      return res.status(404).json({
-        success: false,
-        message: 'No week found!'
-      })
-    }
-
-    //update the week
-    const { name } = req.body
-
-    const updatedWeek = await Week.findByIdAndUpdate(
-      week._id,
-      { name },
-      {
-        new: true,
-        runValidators: true
-      }
-    )
+    const updatedRequest = await Request.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true
+    })
 
     return res.status(200).json({
       success: true,
-      data: updatedWeek
+      data: updatedRequest
     })
   } catch (error) {
     console.log(error)
@@ -220,47 +179,14 @@ exports.update = async (req, res) => {
 //@ access Protected by Admin, mentor
 exports.delete = async (req, res) => {
   try {
-    const { weekId, bootcampId } = req.params
-
-    //check if bootcamp exists
-    const bootcamp = await Bootcamp.findById(bootcampId)
-    if (!bootcamp) {
-      return res.status(404).json({
-        success: false,
-        message: 'No bootcamp found!'
-      })
-    }
-
-    //check if is the mentor for the bootcamp
-    if (
-      req.user.user_type === 'MentorUser' &&
-      !req.user._id.equals(bootcamp.mentor)
-    ) {
-      return res.status(404).json({
-        success: false,
-        message: 'You are not allowed mentor for this bootcamp'
-      })
-    }
-
-    //check if the week exists
-    const week = await Week.findById(weekId)
-
-    if (!week) {
-      return res.status(404).json({
-        success: false,
-        message: 'No week found!'
-      })
-    }
+    const { id } = req.params
 
     //delete the week
-    await week.remove()
-
-    //delete all the days for that week
-    await Day.deleteMany({ week: weekId })
+    const request = await Request.deleteOne({ _id: id })
 
     res.status(200).json({
       success: true,
-      message: week.name + ' is deleted'
+      message: request.name + ' is deleted'
     })
   } catch (error) {
     console.log(error.message)
