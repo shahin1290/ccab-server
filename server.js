@@ -40,7 +40,7 @@ app.post('/currency-convert', async (req, res, next) => {
   try {
     const { currency, country } = req.body
 
-    const apiKey = '0d65e80400de77684ec5'
+    const apiKey = '230d7f66fcc54d2cf6de'
 
     const fromCurrency = 'USD'
     const toCurrency = currency

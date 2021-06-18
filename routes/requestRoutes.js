@@ -6,26 +6,32 @@ const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 router
   .route('/')
   // get all the weeks
-  .get(AllowIfLogin, grantAccess('readOwn', 'request'), requestController.getRequests)
+  .get(
+    AllowIfLogin,
+    grantAccess('readOwn', 'request'),
+    requestController.getRequests
+  )
   // create a new week
   .post(
     AllowIfLogin,
     grantAccess('createAny', 'request'),
     requestController.new
   )
-  // update weeks show attribute for specific bootcamp
-  .put(requestController.updateWeekShow)
 
 router
-  .route('/:bootcampId/:weekId')
+  .route('/:id')
   // specific week details
-  .get(AllowIfLogin, grantAccess('readOwn', 'weeks'), requestController.view)
+  .get(AllowIfLogin, grantAccess('readOwn', 'request'), requestController.view)
   // update a specific week
-  .put(AllowIfLogin, grantAccess('updateOwn', 'weeks'), requestController.update)
+  .put(
+    AllowIfLogin,
+    grantAccess('updateAny', 'request'),
+    requestController.update
+  )
   // delete a specific week
   .delete(
     AllowIfLogin,
-    grantAccess('deleteOwn', 'weeks'),
+    grantAccess('deleteAny', 'request'),
     requestController.delete
   )
 
