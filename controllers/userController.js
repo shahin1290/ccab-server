@@ -199,7 +199,7 @@ exports.new = async (req, res) => {
         student:'', 
         text:'Our mentor <b>'+req.user.name+'</b> has invited you to Codify\'s Student Dashboard. There you can access all your assignments and submit them online.Your login credentials are ',
         assignment:'<br><br><i>Email: '+email+'</i><br><i>Password: '+password+'</i><br><br>You can Change Your Password once you are logged in to your dashboard!',
-        link:'http://batch22server.ccab.tech/login',
+        link:'https://ccab.tech/login',
     };
     const mailStatus = sendMail(res,toUser,subjet,html)
     //console.log('mailStatus: '+( mailStatus));

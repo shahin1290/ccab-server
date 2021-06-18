@@ -171,7 +171,7 @@ exports.new = async (req, res) => {
         student: '',
         text: 'We want to inform you that a new assignment has been added ',
         assignment: ' ' + task.projectName + ' Assignment.<br>',
-        link: 'http://batch22server.ccab.tech/assignment/' + task._id
+        link: 'https://ccab.tech/assignment/' + task._id
       }
 
       var mailStatus = sendMail(res, toUser, subjet, html)
