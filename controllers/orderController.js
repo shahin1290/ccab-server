@@ -40,7 +40,7 @@ exports.createOrder = async (req, res) => {
 
     let course
 
-    if (id === 'Basic Plan' || id === 'Standard Plan' || id === 'Premium Plan') {
+    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -60,9 +60,9 @@ exports.createOrder = async (req, res) => {
     const order = await newOrder.save()
 
     if (
-      (order._id && id === 'Basic Plan') ||
-      (order._id && id === 'Standard Plan') ||
-      (order._id && id === 'Premium Plan')
+      (order._id && id === 'Silver Plan') ||
+      (order._id && id === 'Golden Plan') ||
+      (order._id && id === 'Diamond Plan')
     ) {
       return res.status(201).json({ success: true, data: order })
     } else {
@@ -144,7 +144,7 @@ exports.ViewOrder = async (req, res) => {
   try {
     let course
 
-    if (id === 'Basic Plan' || id === 'Standard Plan' || id === 'Premium Plan') {
+    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -307,9 +307,9 @@ exports.createKlarnaOrder = async (req, res) => {
     let course
 
     if (
-      bootcampId === 'Basic Plan' ||
-      bootcampId === 'Standard Plan' ||
-      bootcampId === 'Premium Plan'
+      bootcampId === 'Silver Plan' ||
+      bootcampId === 'Golden Plan' ||
+      bootcampId === 'Diamond Plan'
     ) {
       course = bootcampId
     } else {
@@ -330,9 +330,9 @@ exports.createKlarnaOrder = async (req, res) => {
 
     //update bootcamp students array
     if (
-      (order._id && bootcampId === 'Basic Plan') ||
-      (order._id && bootcampId === 'Standard Plan') ||
-      (order._id && bootcampId === 'Premium Plan')
+      (order._id && bootcampId === 'Silver Plan') ||
+      (order._id && bootcampId === 'Golden Plan') ||
+      (order._id && bootcampId === 'Diamond Plan')
     ) {
       return res.status(201).json({ success: true, data: order })
     } else {
@@ -360,9 +360,9 @@ exports.readKlarnaOrder = async (req, res) => {
     let course
 
     if (
-      bootcampId === 'Basic Plan' ||
-      bootcampId === 'Standard Plan' ||
-      bootcampId === 'Premium Plan'
+      bootcampId === 'Silver Plan' ||
+      bootcampId === 'Golden Plan' ||
+      bootcampId === 'Diamond Plan'
     ) {
       course = bootcampId
     } else {
