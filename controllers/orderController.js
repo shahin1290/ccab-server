@@ -351,9 +351,16 @@ exports.createKlarnaOrder = async (req, res) => {
     if (
       (order._id && bootcampId === 'Basic Plan') ||
       (order._id && bootcampId === 'Standard Plan') ||
-      (order._id && bootcampId === 'Premium Plan') ||
-      (order._id && bootcampId === 'bill')
+      (order._id && bootcampId === 'Premium Plan')
     ) {
+      return res.status(201).json({ success: true, data: order })
+    } else if (order._id && bootcampId === 'bill') {
+      await Request.findOneAndUpdate(
+        { requestedUser: req.user._id },
+        {
+          status: 'Paid'
+        }
+      )
       return res.status(201).json({ success: true, data: order })
     } else {
       //update bootcamp students array
