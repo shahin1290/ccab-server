@@ -194,14 +194,30 @@ exports.new = async (req, res) => {
     console.log('REQ.User :...'+req.user)
     //send mail .............>
     const toUser={email:email,name:name}
-    const subjet ='Invitation: to Codify Student Dashboard';
+    const subjet ='Welcome to Codify Student Dashboard';
     const html ={
         student:'', 
-        text:'Our mentor <b>'+req.user.name+'</b> has invited you to Codify\'s Student Dashboard. There you can access all your assignments and submit them online.Your login credentials are ',
+        text:' Codify\'s Student Dashboard. There you can access all your assignments and submit them online.Your login credentials are ',
         assignment:'<br><br><i>Email: '+email+'</i><br><i>Password: '+password+'</i><br><br>You can Change Your Password once you are logged in to your dashboard!',
         link:'https://ccab.tech/login',
     };
     const mailStatus = sendMail(res,toUser,subjet,html)
+
+
+    const htmlToAdmin ={
+      student:'', 
+      text:'A New Students has been rigstered !<b>'+req.user.name+'            <table> \
+      <tr> <th> Full Name </th> <th>Email</th> <th>Phone Number</th><th>gender</th></tr>\
+      <tr>  <td>'+ name +'</td><td>'+ email +'</td><td>'+ phone +'</td><td>'+ gender+'</td></tr> \
+      </table>',
+      assignment:'',
+      link:'https://ccab.tech/admin-users-list',
+  };
+    const AdminmailStatus = sendMail(res,{email:"te.abdul.m@codifycollege.se",name:"Admin"},
+      "A New Students"+req.user.name
+      ,htmlToAdmin)
+
+     console.log(AdminmailStatus);
     //console.log('mailStatus: '+( mailStatus));
     
   if (mailStatus)    
@@ -526,10 +542,45 @@ exports.register = async (req, res) => {
 
     const newUser = await User.findOne({ email }).select("-password")
 
-    res.status(201).json({
-      success: true,
-      data: newUser,
-    });
+
+
+        //send mail .............>
+        const toUser={email:email,name:name}
+        const subjet ='Welcome to Codify Student Dashboard';
+        const html ={
+            student:'', 
+            text:'Congratulations on taking a first strong step towards becoming a Full Stack Web Developer. <br> In 16-30 weeks, we\'ll teach you the essentials to start working as a Full Stack dev',
+            assignment:'',
+            link:'',
+        };
+        const mailStatus = sendMail(res,toUser,subjet,html)
+    
+    
+        const htmlToAdmin ={
+          student:'', 
+          text:'   A New Students Registered !   ',
+          assignment:'<table> \
+          <tr> <th> Full Name </th> <th>Email</th> <th>Phone Number</th><th>gender</th></tr>\
+          <tr>  <td>'+ name +'</td><td>'+ email +'</td><td>'+ phoneNumber +'</td><td>'+ gender+'</td></tr> \
+          </table>',
+          link:'https://ccab.tech/admin-users-list',
+      };
+        const AdminmailStatus = sendMail(res,{email:"te.abdul.m@codifycollege.se",name:"Admin"},
+          "A New Students Registered :"+name
+          ,htmlToAdmin)
+    
+         console.log(AdminmailStatus);
+        //console.log('mailStatus: '+( mailStatus));
+        
+      if (mailStatus &&AdminmailStatus)    
+        res.status(201).json({
+          success: true,
+          data: newUser,
+        });
+
+
+
+
 
   }catch(err){
     console.log('Server Error : '+err);

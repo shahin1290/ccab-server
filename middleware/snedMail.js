@@ -11,7 +11,7 @@ const sendMail=  (
         assignment:'',
         link:'#'})=>{
 
-//console.log('sening mail stated : ',toUser, html, subject);
+console.log('sening mail stated : ',toUser, html, subject);
 const transporter = mailer.createTransport({
     service:'gmail',
     //service is the e-mail service that you want to use
@@ -37,7 +37,7 @@ const transporter = mailer.createTransport({
       }
     
 
-  // send email back to the student
+
   transporter.sendMail(mailOptions_ForStudent,(err , info)=>{
     if ( err) {
         console.log('err:'+err);
