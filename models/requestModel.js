@@ -16,8 +16,8 @@ const requestSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    default: 'Not Sent',
-    enum: ['Not Sent', 'Sent', 'Not Paid', 'Paid']
+    default: 'Sent',
+    enum: ['Sent', 'Paid']
   },
 
   paidAt: {

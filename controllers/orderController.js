@@ -1,13 +1,13 @@
 const { validationResult } = require('express-validator')
 const User = require('../models/userModel')
 const Order = require('../models/orderModel')
+const Request = require('../models/requestModel')
 const Bootcamp = require('../models/bootcampModel')
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const axios = require('axios')
 
 exports.stripePaymentIntent = async (req, res) => {
   const { paymentMethodType, currency, amount } = req.body
-
 
   try {
     const paymentIntent = await stripe.paymentIntents.create({
@@ -40,7 +40,8 @@ exports.createOrder = async (req, res) => {
 
     let course
 
-    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan') {
+    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan' ||
+    id === 'bill') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -64,6 +65,15 @@ exports.createOrder = async (req, res) => {
       (order._id && id === 'Golden Plan') ||
       (order._id && id === 'Diamond Plan')
     ) {
+      return res.status(201).json({ success: true, data: order })
+    } else if (order._id && id === 'bill') {
+      //update bootcamp students array
+      await Request.findOneAndUpdate(
+        { requestedUser: req.user._id },
+        {
+          status: 'Paid'
+        }
+      )
       return res.status(201).json({ success: true, data: order })
     } else {
       //update bootcamp students array
@@ -144,7 +154,8 @@ exports.ViewOrder = async (req, res) => {
   try {
     let course
 
-    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan') {
+    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan' ||
+    id === 'bill') {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -279,7 +290,6 @@ exports.createKlarnaOrder = async (req, res) => {
 
   const bootcampId = req.params.bootcampId
 
-
   try {
     const config = {
       withCredentials: true,
@@ -309,7 +319,8 @@ exports.createKlarnaOrder = async (req, res) => {
     if (
       bootcampId === 'Silver Plan' ||
       bootcampId === 'Golden Plan' ||
-      bootcampId === 'Diamond Plan'
+      bootcampId === 'Diamond Plan'||
+      bootcampId === 'bill'
     ) {
       course = bootcampId
     } else {
@@ -334,6 +345,14 @@ exports.createKlarnaOrder = async (req, res) => {
       (order._id && bootcampId === 'Golden Plan') ||
       (order._id && bootcampId === 'Diamond Plan')
     ) {
+      return res.status(201).json({ success: true, data: order })
+    } else if (order._id && bootcampId === 'bill') {
+      await Request.findOneAndUpdate(
+        { requestedUser: req.user._id },
+        {
+          status: 'Paid'
+        }
+      )
       return res.status(201).json({ success: true, data: order })
     } else {
       //update bootcamp students array
@@ -362,7 +381,8 @@ exports.readKlarnaOrder = async (req, res) => {
     if (
       bootcampId === 'Silver Plan' ||
       bootcampId === 'Golden Plan' ||
-      bootcampId === 'Diamond Plan'
+      bootcampId === 'Diamond Plan'||
+      bootcampId === 'bill'
     ) {
       course = bootcampId
     } else {
