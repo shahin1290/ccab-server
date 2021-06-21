@@ -138,7 +138,7 @@ exports.new = async (req, res) => {
   }
 
   try {
-    const { name, email, password, user_type,phone, gender } = req.body;
+    const { name, email, password, user_type,phone, gender,language } = req.body;
 
     // check if the name or email exist 
     const EmailORNameExist =await isEmailOrNameExist(email,name,null);
@@ -162,7 +162,8 @@ exports.new = async (req, res) => {
       email,
       user_type,
       phoneNumber:phone,
-      gender: gender
+      gender: gender,
+      language:language
     });
 
     // salt the password
@@ -437,6 +438,7 @@ exports.login = async (req, res) => {
         user_type: user.user_type,
         phone:user.phoneNumber,
         token: user.token,
+        language:user.language,
         avatar:user.avatar,
       });
     } else {
@@ -481,6 +483,7 @@ exports.isTokenValid = async(req,res,next)=>{
           name: req.user.name,
           email: req.user.email,
           phone:phoneNumber,
+          language:user.language,
           user_type: req.user.user_type,
           avatar:req.user.avatar
         }
@@ -507,7 +510,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const { name, email, password, phoneNumber, gender } = req.body;
+    const { name, email, password, phoneNumber, gender,language } = req.body;
 
     // check if the name or email exist 
     const EmailORNameExist =await isEmailOrNameExist(email,name);
@@ -531,7 +534,8 @@ exports.register = async (req, res) => {
       email,
       phoneNumber,
       user_type:'StudentUser',
-      gender
+      gender,
+      language
     });
 
     // salt the password
