@@ -56,7 +56,6 @@ exports.getTasks = async (req, res) => {
       tasks = await Task.find({ bootcamp: bootcamp._id }).populate('user name')
     }
 
-
     if (tasks.length === 0) {
       return res.status(404).json({
         success: false,
@@ -177,7 +176,7 @@ exports.new = async (req, res) => {
       var mailStatus = sendMail(res, toUser, subjet, html)
     }
 
-    if (mailStatus) return res.status(201).json({ success: true, data: task })
+    return res.status(201).json({ success: true, data: task })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -409,7 +408,6 @@ exports.downloadFile = async (req, res, next) => {
   try {
     //get the answer id
     const id = req.params.id
-    console.log(id)
 
     // get specific answer from db
     const assignment = await Task.findById(id)

@@ -52,7 +52,7 @@ exports.getAllQuizzes = async (req, res, next) => {
     if (req.user.user_type === 'StudentUser') {
       const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id)
 
-      if (!isValidStudent && Number(bootcamp.price) >0) {
+      if (!isValidStudent && Number(bootcamp.price) > 0) {
         return res.status(404).json({
           success: false,
           message: 'Student is not enrolled in this bootcamp'
@@ -186,7 +186,7 @@ exports.newQuiz = async (req, res, next) => {
       var mailStatus = sendMail(res, toUser, subjet, html)
     }
 
-    if (mailStatus) return res.status(201).json({ success: true, data: savedQuiz })
+    return res.status(201).json({ success: true, data: savedQuiz })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -199,7 +199,6 @@ exports.newQuiz = async (req, res, next) => {
 //@route GET api/quiz/:id
 //@accesss private (allow for Admin, mentor, student)
 exports.quizDetails = async (req, res) => {
-
   try {
     //check the bootcamp exists
     const bootcamp = await Bootcamp.findById(req.params.bootcampId)
@@ -233,7 +232,7 @@ exports.quizDetails = async (req, res) => {
         message: 'You are not allowed mentor for this bootcamp'
       })
     }
-    
+
     //check the day exists
     const day = await Day.findById(req.params.dayId)
 

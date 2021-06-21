@@ -230,7 +230,6 @@ exports.bootcampDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updateBootcamp = async function (req, res) {
   try {
-    console.log(req.body)
     const errors = getValidationResualt(req)
     if (errors.length)
       //returning only first error allways
@@ -239,14 +238,13 @@ exports.updateBootcamp = async function (req, res) {
     const id = req.params.id
     const bootcamp = await Bootcamp.findById(id)
 
-    let update
+    let update = req.body
 
     if (req.body.students) {
-      update = { ...req.body, students: JSON.parse(req.body.students) }
+      update = { ...update, students: JSON.parse(req.body.students) }
     }
 
     if (req.body.info_list) {
-      console.log(req.body.info_list)
       update = { ...update, info_list: req.body.info_list }
     }
 
