@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator')
 const Request = require('../models/requestModel')
 const User = require('../models/userModel')
+const { sendRequestPaymentMail } = require('../util/requestPaymentMail')
 
 //********** Validation Result ************
 
@@ -16,7 +17,6 @@ function getValidationResualt(req) {
 exports.getRequests = async (req, res) => {
   try {
     let requests
-
 
     if (req.user.user_type === 'AdminUser') {
       requests = await Request.find().populate(
@@ -56,6 +56,8 @@ exports.new = async (req, res) => {
     })
 
     const request = await newRequest.save()
+
+    sendRequestPaymentMail(user.name, user.email)
     if (request) return res.status(201).json({ success: true, data: request })
   } catch (error) {
     console.log(error)
@@ -64,8 +66,6 @@ exports.new = async (req, res) => {
     })
   }
 }
-
-
 
 // @ DESC GET A SPECEFIC week
 // @ ROUTE /api/weeks/bootcampId/:weekId
