@@ -121,6 +121,7 @@ const quizAnswerRoutes = require('./routes/quizAnswerRoutes')
 const quizRoutes = require('./routes/quizRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 const requestRoutes = require('./routes/requestRoutes')
+const jobRoutes = require('./routes/jobRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -132,6 +133,8 @@ app.use('/api/quizAnswer', quizAnswerRoutes)
 app.use('/api/quizzes', quizRoutes)
 app.use('/api/order', orderRoutes)
 app.use('/api/request', requestRoutes)
+app.use('/api/job', jobRoutes)
+
 
 app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)

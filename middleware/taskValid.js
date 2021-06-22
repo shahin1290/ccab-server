@@ -19,7 +19,6 @@ fileSize: 1024*1024*64 // 64MB  max
 }
 // check the file must be allways pdf only 
 const FileFilter =(req,file,callback)=>{
-console.log(file);
 
 if ( file.mimetype =='application/pdf') {callback(null,true)} else callback(null, false)
 }

@@ -92,5 +92,9 @@ exports.roles = (()=>{
         .createAny("request")
         .updateAny("request")
         .deleteAny("request")
+        //jobs
+        .readAny("job")
+        .updateAny("job")
+        .deleteAny("job")
     return ac;
 })();
