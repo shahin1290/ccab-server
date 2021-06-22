@@ -40,8 +40,12 @@ exports.createOrder = async (req, res) => {
 
     let course
 
-    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan' ||
-    id === 'bill') {
+    if (
+      id === 'Silver Plan' ||
+      id === 'Golden Plan' ||
+      id === 'Diamond Plan' ||
+      id === 'bill'
+    ) {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -154,8 +158,12 @@ exports.ViewOrder = async (req, res) => {
   try {
     let course
 
-    if (id === 'Silver Plan' || id === 'Golden Plan' || id === 'Diamond Plan' ||
-    id === 'bill') {
+    if (
+      id === 'Silver Plan' ||
+      id === 'Golden Plan' ||
+      id === 'Diamond Plan' ||
+      id === 'bill'
+    ) {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
@@ -319,7 +327,7 @@ exports.createKlarnaOrder = async (req, res) => {
     if (
       bootcampId === 'Silver Plan' ||
       bootcampId === 'Golden Plan' ||
-      bootcampId === 'Diamond Plan'||
+      bootcampId === 'Diamond Plan' ||
       bootcampId === 'bill'
     ) {
       course = bootcampId
@@ -381,7 +389,7 @@ exports.readKlarnaOrder = async (req, res) => {
     if (
       bootcampId === 'Silver Plan' ||
       bootcampId === 'Golden Plan' ||
-      bootcampId === 'Diamond Plan'||
+      bootcampId === 'Diamond Plan' ||
       bootcampId === 'bill'
     ) {
       course = bootcampId

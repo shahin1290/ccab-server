@@ -17,7 +17,6 @@ exports.getRequests = async (req, res) => {
   try {
     let requests
 
-    console.log(await Request.findOne({ requestedUser: req.user._id }))
 
     if (req.user.user_type === 'AdminUser') {
       requests = await Request.find().populate(
@@ -36,7 +35,6 @@ exports.getRequests = async (req, res) => {
     if (requests.length)
       return res.status(201).json({ success: true, data: requests })
   } catch (error) {
-    console.log(error)
     res.status(500).json({
       message: 'Server Error' + error
     })
@@ -67,61 +65,7 @@ exports.new = async (req, res) => {
   }
 }
 
-//@ DESC UPDATE weeks show for specific bootcamp
-// @ ROUTE /api/weeks/:bootcampId
-//@ access Protected/Admin, mentor and student
-exports.updateWeekShow = async (req, res) => {
-  console.log(req.params)
-  try {
-    const { bootcampId } = req.params
 
-    //check if bootcamp exists
-    const bootcamp = await Bootcamp.findById(bootcampId)
-    if (!bootcamp) {
-      return res.status(404).json({
-        success: false,
-        message: 'No bootcamp found!'
-      })
-    }
-
-    const start_date = bootcamp.start_date
-    const current_date = new Date()
-
-    const timePeriod = []
-
-    for (let i = 0; i <= bootcamp.weeks; i++) {
-      timePeriod.push(start_date.getTime() + 1000 * 60 * 60 * 24 * 7 * [i])
-    }
-
-    timePeriod.map(async (item, index) => {
-      if (current_date.getTime() > item) {
-        await Week.findOneAndUpdate(
-          { name: `week${index + 1}` },
-          { show: true }
-        )
-      }
-    })
-
-    const weeks = await Week.find({ bootcamp: bootcamp._id, show: true })
-
-    if (weeks.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No week found!'
-      })
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: weeks
-    })
-  } catch (error) {
-    console.log(error)
-    res.status(500).json({
-      message: error
-    })
-  }
-}
 
 // @ DESC GET A SPECEFIC week
 // @ ROUTE /api/weeks/bootcampId/:weekId
