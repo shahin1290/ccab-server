@@ -13,8 +13,10 @@ const daySchema = new mongoose.Schema({
   },
 
   video_path: {
-    type: String,
-    required: true
+    type: String
+  },
+  arabic_video_path: {
+    type: String
   },
   show: { type: Boolean, default: true },
 

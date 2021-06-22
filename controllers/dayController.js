@@ -288,7 +288,6 @@ exports.update = async (req, res) => {
       })
     }
 
-    console.log(req.body)
 
     const source_code = []
 
@@ -348,6 +347,7 @@ exports.update = async (req, res) => {
       updatedObject = {
         name: req.body.name,
         video_path: req.body.video_path,
+        arabic_video_path: req.body.arabic_video_path,
         sections: req.body.sections
       }
     } else
@@ -357,13 +357,18 @@ exports.update = async (req, res) => {
           req.files && req.files['video_path']
             ? req.files['video_path'][0].filename
             : req.body.video_path,
+        arabic_video_path: req.body.arabic_video_path,
         sections,
         show: req.body.show
       }
 
+      console.log(updatedObject)
+
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {
       new: true
     })
+
+    console.log(updatedDay);
 
     return res.status(200).json({
       success: true,
