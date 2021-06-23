@@ -19,9 +19,9 @@ const sendContactMail = (data) => {
 
   emailTo.forEach((el) => {
     const mailOptions = {
-      from: `"NodeMailer Contact" ${process.env.email}`,
+      from: `"Codify Academy" ${process.env.email}`,
       to: el.email,
-      subject: 'Code Academy Contact ',
+      subject: 'Code Academy Contact',
       html: el.template
     }
 
