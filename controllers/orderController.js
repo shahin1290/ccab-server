@@ -222,7 +222,7 @@ exports.createKlarnaSession = async (req, res) => {
     if (order.length) {
       // send Get request to Klarna API ( Read the oreder )
       const resp = await axios.get(
-        'https://api.playground.klarna.com/checkout/v3/orders/' +
+        'https://api.klarna.com/checkout/v3/orders/' +
           order[0].charge,
         config
       )
@@ -235,7 +235,7 @@ exports.createKlarnaSession = async (req, res) => {
     // Create New Order
 
     const resp = await axios.post(
-      'https://api.playground.klarna.com/payments/v1/sessions',
+      'https://api.klarna.com/payments/v1/sessions',
       data,
       config
     )
@@ -273,7 +273,7 @@ exports.readKlarnaSession = async (req, res) => {
 
     // send Get request to Klarna API ( Read the session )
     const resp = await axios.get(
-      `https://api.playground.klarna.com/payments/v1/sessions/${session_id}`,
+      `https://api.klarna.com/payments/v1/sessions/${session_id}`,
       config
     )
 
@@ -314,7 +314,7 @@ exports.createKlarnaOrder = async (req, res) => {
     // Create New Order
 
     const resp = await axios.post(
-      `https://api.playground.klarna.com/payments/v1/authorizations/${token}/order`,
+      `https://api.klarna.com/payments/v1/authorizations/${token}/order`,
       data,
       config
     )
@@ -425,7 +425,7 @@ exports.readKlarnaOrder = async (req, res) => {
 
     // send Get request to Klarna API ( Read the oreder )
     const resp = await axios.get(
-      `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}`,
+      `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}`,
       config
     )
     if (resp.data.fraud_status == 'ACCEPTED') {
@@ -508,7 +508,7 @@ exports.captureOrder = async (req, res) => {
 
     // send acknowled order
     const resp = await axios.post(
-      `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
+      `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
       { captured_amount: amount },
       config
     )
