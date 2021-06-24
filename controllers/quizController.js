@@ -6,7 +6,7 @@ const User = require('../models/userModel')
 const Day = require('../models/dayModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 const fs = require('fs')
-const { sendMail } = require('../middleware/snedMail')
+const { sendMail } = require('../middleware/sendMail')
 
 //********** Functions ************************************
 

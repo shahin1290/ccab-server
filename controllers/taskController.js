@@ -7,7 +7,7 @@ const Bootcamp = require('../models/bootcampModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 
 const fs = require('fs')
-const { sendMail } = require('../middleware/snedMail')
+const { sendMail } = require('../middleware/sendMail')
 
 //@ DESC GET posts
 //@ ROUTE /api/posts

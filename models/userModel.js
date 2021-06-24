@@ -9,13 +9,11 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
 
   language: {
-    type: String,
-    
+    type: String
   },
 
   password: {
@@ -34,7 +32,7 @@ const userSchema = new mongoose.Schema({
       ref: 'User'
     }
   ],
-  gender: { type: String,  enum: ['male', 'female', 'other'] },
+  gender: { type: String, enum: ['male', 'female', 'other'] },
   user_type: {
     type: String,
     require: true,
@@ -44,6 +42,10 @@ const userSchema = new mongoose.Schema({
 
   token: {
     type: String
+  },
+
+  createdAt: {
+    type: Date,
   }
 })
 

@@ -1,6 +1,6 @@
 const Answer = require('../models/answerModel')
 const { validationResult } = require('express-validator')
-const { sendMail } = require('../middleware/snedMail')
+const { sendMail } = require('../middleware/sendMail')
 const Bootcamp = require('../models/bootcampModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 const Task = require('../models/taskModel')
@@ -108,8 +108,7 @@ exports.addNewAnswer = async (req, res) => {
       student: req.user.name,
       text: 'has submited the ',
       assignment: ' ' + answer.task.projectName + ' assignment.<br>',
-      link:
-        'https://ccab.tech/admin/taskdetails/' + answer.task._id
+      link: 'https://ccab.tech/admin/taskdetails/' + answer.task._id
     }
     const mailStatus = sendMail(res, toUser, subjet, html)
 
@@ -141,7 +140,10 @@ exports.downloadFile = async (req, res, next) => {
     if (!answer)
       return res.status(404).json({ success: false, message: 'File Not found' })
 
-    if (req.user.user_type === 'MentorUser' || req.user.user_type === 'AdminUser')
+    if (
+      req.user.user_type === 'MentorUser' ||
+      req.user.user_type === 'AdminUser'
+    )
       // set the isViewed to true;
       await answer.updateOne({ isViewed: true, status: 'Pending' })
 
@@ -208,13 +210,13 @@ exports.view = async (req, res) => {
           message: 'You are not allowed mentor for this bootcamp'
         })
       }
-      answers = await Answer.find({ task: task._id }).populate('user','name')
+      answers = await Answer.find({ task: task._id }).populate('user', 'name')
     }
 
     //check if is the admin
     if (req.user.user_type === 'AdminUser') {
-      console.log('getting answers for Admin ');
-      answers = await Answer.find({ task: task._id }).populate('user','name')
+      console.log('getting answers for Admin ')
+      answers = await Answer.find({ task: task._id }).populate('user', 'name')
     }
 
     if (!answers.length) {

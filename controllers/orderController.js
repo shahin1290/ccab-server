@@ -5,6 +5,7 @@ const Request = require('../models/requestModel')
 const Bootcamp = require('../models/bootcampModel')
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const axios = require('axios')
+const { sendMail } = require('../middleware/sendMail')
 
 exports.stripePaymentIntent = async (req, res) => {
   const { paymentMethodType, currency, amount } = req.body
@@ -64,11 +65,26 @@ exports.createOrder = async (req, res) => {
 
     const order = await newOrder.save()
 
+    //send email to admin
+    const admin = await User.findOne({ user_type: 'AdminUser' })
+
+    const toUser = { email: admin.email, name: admin.name }
+    const subject = 'New Stripe Order'
+    const html = {
+      student: '',
+      text: 'We want to inform you that a New Stripe order have been made ',
+      assignment: order._id && id,
+      link: 'https://ccab.tech/profile'
+    }
+
     if (
       (order._id && id === 'Silver Plan') ||
       (order._id && id === 'Golden Plan') ||
       (order._id && id === 'Diamond Plan')
     ) {
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     } else if (order._id && id === 'bill') {
       //update bootcamp students array
@@ -78,12 +94,19 @@ exports.createOrder = async (req, res) => {
           status: 'Paid'
         }
       )
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     } else {
       //update bootcamp students array
       await Bootcamp.findByIdAndUpdate(id, {
         $push: { students: user._id }
       })
+
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     }
   } catch (error) {
@@ -347,12 +370,27 @@ exports.createKlarnaOrder = async (req, res) => {
 
     const order = await newOrder.save()
 
+    //send email to admin
+    const admin = await User.findOne({ user_type: 'AdminUser' })
+
+    const toUser = { email: admin.email, name: admin.name }
+    const subject = 'New Klarna Order'
+    const html = {
+      student: '',
+      text: 'We want to inform you that a New Klarna order have been made. You need to capture the order',
+      assignment: order._id && bootcampId,
+      link: 'https://ccab.tech/profile'
+    }
+
     //update bootcamp students array
     if (
       (order._id && bootcampId === 'Silver Plan') ||
       (order._id && bootcampId === 'Golden Plan') ||
       (order._id && bootcampId === 'Diamond Plan')
     ) {
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     } else if (order._id && bootcampId === 'bill') {
       await Request.findOneAndUpdate(
@@ -361,12 +399,19 @@ exports.createKlarnaOrder = async (req, res) => {
           status: 'Paid'
         }
       )
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     } else {
       //update bootcamp students array
       await Bootcamp.findByIdAndUpdate(bootcampId, {
         $push: { students: user._id }
       })
+
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
       return res.status(201).json({ success: true, data: order })
     }
   } catch (error) {
