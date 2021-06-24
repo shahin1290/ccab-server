@@ -1,4 +1,4 @@
-const requestPayment = (name) => {
+const studentEmailTemplate = (name, text, assignment) => {
   return `
   <!doctype html>
   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -191,7 +191,7 @@ const requestPayment = (name) => {
                                           <td align="center" style="font-size:0px;padding:10px 25px;padding-bottom:40px;word-break:break-word;">
   
                                               <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:bold;line-height:1;text-align:center;color:#555;">
-                                              Coding for better life
+                                                  Coding for better life
                                               </div>
   
                                           </td>
@@ -201,8 +201,8 @@ const requestPayment = (name) => {
                                           <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
   
                                               <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                                  Hello ${name}!<br></br>
-                                                  Thank you for being a part of the program. You are requested to pay a bill. Click the link below to check and pay the bill:
+                                                  Hi ${name}!<br /><br /> ${text} :
+                                                  <strong>${assignment}</strong><br /><br /><br />
                                               </div>
   
                                           </td>
@@ -229,6 +229,7 @@ const requestPayment = (name) => {
   
                                               <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:14px;line-height:20px;text-align:left;color:#525252;">
                                               <hr><a href="mailto:info@codifycollege.se" target="_blank" style="text-decoration:none">info@codifycollege.se</a><br><br></p><p>Tel: <a href="tel:+46723338723" style="text-decoration:none">+46 723338723</a></p><p>Visit us at: <a href="https://ccab.tech/">ccab.tech</a></p><p><a href="https://www.linkedin.com/company/codify-college/">LinkedIn</a> ,<a href="https://www.facebook.com/codifyCollege">Facebook</a> ,<a href="https://www.youtube.com/channel/UCXi6GEt0yD0ZXmlrnHgKfPA/featured">YouTube</a> ,<a href="https://www.instagram.com/codify.college/">Instagram</a></p><p >Cheers,<br>Codify College AB</p></div>
+
                                               </div>
   
                                           </td>
@@ -341,4 +342,4 @@ const requestPayment = (name) => {
     `
 }
 
-module.exports = { requestPayment }
+module.exports = { studentEmailTemplate }
