@@ -26,7 +26,15 @@ exports.roles = (() => {
   ac.grant('ViewerUser').readAny('profile').readOwn('profile')
 
   // Instructor user
-  ac.grant('InstructorUser').readAny('profile').readOwn('profile')
+  ac.grant('InstructorUser')
+    //profile
+    .readAny('profile')
+    .readOwn('profile')
+    //session
+    .readOwn('session')
+    .updateOwn('session')
+    .deleteOwn('session')
+    .createOwn('session')
 
   // Mentor user
   ac.grant('MentorUser')
