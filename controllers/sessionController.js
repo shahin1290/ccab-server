@@ -1,5 +1,5 @@
 const Session = require('../models/sessionModel')
-const User = require('../models/userModel')
+const Appointment = require('../models/appointmentModel')
 
 //********** default route ************
 //@des Get all Session for specific account
@@ -55,18 +55,33 @@ exports.manageSession = async (req, res, next) => {
 //@route POST api/v2/Session
 //@accesss private (allow for all users)
 exports.newSession = async (req, res, next) => {
-  const { startDate, endDate, notes, selectedStudent } = req.body
+  const { startDate, endDate, notes, selectedAppointment } = req.body
 
-  const student = await User.findOne({ email: selectedStudent })
+  console.log(selectedAppointment)
+
+  const appointment = await Appointment.findOne({
+    _id: selectedAppointment
+  })
   try {
     const newSession = new Session({
-      instructor: req.user._id,
+      instructor: appointment.instructor,
       startDate,
       endDate,
       notes,
-      student
+      student: appointment.student,
+      service: appointment.service
     })
     const session = await newSession.save()
+
+    if (session) {
+      await Appointment.findOneAndUpdate(
+        { _id: appointment._id },
+        {
+          sessionNumber:
+            appointment.sessionNumber > 0 && appointment.sessionNumber - 1
+        }
+      )
+    }
 
     return res.status(201).json({
       success: true,
