@@ -33,16 +33,19 @@ const sessionSchema = new mongoose.Schema({
     default: 'Incomming',
     enum: ['Incomming', 'Not Reported', 'Reported']
   },
+  notes: {
+    type: String
+  },
 
   // default start date is date.now .
-  start_date: {
+  startDate: {
     type: Date,
-    default: () => get_date(new Date()),
+    default: () => get_date(new Date())
   },
   // default end date is after 1 hour from start date.
-  end_date: {
+  endDate: {
     type: Date,
-    default: () => get_date(new Date(Date.now() + 1000 * 60)),
+    default: () => get_date(new Date(Date.now() + 1000 * 60))
   },
   createdAt: {
     type: Date,

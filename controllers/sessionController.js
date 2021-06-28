@@ -1,5 +1,5 @@
-const { validationResult } = require('express-validator')
 const Session = require('../models/sessionModel')
+const User = require('../models/userModel')
 
 //********** default route ************
 //@des Get all Session for specific account
@@ -10,7 +10,7 @@ exports.getAllSessions = async (req, res, next) => {
   try {
     const sessions = await Session.find({ instructor: req.user._id })
 
-    console.log();
+    console.log()
 
     if (!sessions.length)
       return res
@@ -55,8 +55,17 @@ exports.manageSession = async (req, res, next) => {
 //@route POST api/v2/Session
 //@accesss private (allow for all users)
 exports.newSession = async (req, res, next) => {
+  const { startDate, endDate, notes, selectedStudent } = req.body
+
+  const student = await User.findOne({ email: selectedStudent })
   try {
-    const newSession = new Session({ instructor: req.user._id })
+    const newSession = new Session({
+      instructor: req.user._id,
+      startDate,
+      endDate,
+      notes,
+      student
+    })
     const session = await newSession.save()
 
     return res.status(201).json({
