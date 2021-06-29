@@ -3,6 +3,7 @@ const User = require('../models/userModel')
 const Order = require('../models/orderModel')
 const Request = require('../models/requestModel')
 const Bootcamp = require('../models/bootcampModel')
+const Service = require('../models/serviceModel')
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const axios = require('axios')
 const { sendMail } = require('../middleware/sendMail')
@@ -36,6 +37,8 @@ exports.createOrder = async (req, res) => {
 
   const { id } = req.params
 
+  console.log(token, amount, currency, id)
+
   try {
     const user = await User.findById(req.user._id)
 
@@ -50,7 +53,15 @@ exports.createOrder = async (req, res) => {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
-      course = bootcamp.name
+      const service = await Service.findById(id)
+
+      if (bootcamp && bootcamp.name) {
+        course = bootcamp.name
+      }
+
+      if (service && service.name) {
+        course = service.name
+      }
     }
 
     const newOrder = new Order({
@@ -190,7 +201,15 @@ exports.ViewOrder = async (req, res) => {
       course = id
     } else {
       const bootcamp = await Bootcamp.findById(id)
-      course = bootcamp.name
+      const service = await Service.findById(id)
+
+      if (bootcamp && bootcamp.name) {
+        course = bootcamp.name
+      }
+
+      if (service && service.name) {
+        course = service.name
+      }
     }
 
     const order = await Order.findOne({
@@ -245,7 +264,7 @@ exports.createKlarnaSession = async (req, res) => {
     if (order.length) {
       // send Get request to Klarna API ( Read the oreder )
       const resp = await axios.get(
-        'https://api.klarna.com/checkout/v3/orders/' +
+        'https://api.playground.klarna.com/checkout/v3/orders/' +
           order[0].charge,
         config
       )
@@ -258,7 +277,7 @@ exports.createKlarnaSession = async (req, res) => {
     // Create New Order
 
     const resp = await axios.post(
-      'https://api.klarna.com/payments/v1/sessions',
+      'https://api.playground.klarna.com/payments/v1/sessions',
       data,
       config
     )
@@ -296,7 +315,7 @@ exports.readKlarnaSession = async (req, res) => {
 
     // send Get request to Klarna API ( Read the session )
     const resp = await axios.get(
-      `https://api.klarna.com/payments/v1/sessions/${session_id}`,
+      `https://api.playground.klarna.com/payments/v1/sessions/${session_id}`,
       config
     )
 
@@ -337,7 +356,7 @@ exports.createKlarnaOrder = async (req, res) => {
     // Create New Order
 
     const resp = await axios.post(
-      `https://api.klarna.com/payments/v1/authorizations/${token}/order`,
+      `https://api.playground.klarna.com/payments/v1/authorizations/${token}/order`,
       data,
       config
     )
@@ -356,7 +375,15 @@ exports.createKlarnaOrder = async (req, res) => {
       course = bootcampId
     } else {
       const bootcamp = await Bootcamp.findById(bootcampId)
-      course = bootcamp.name
+      const service = await Service.findById(bootcampId)
+
+      if (bootcamp && bootcamp.name) {
+        course = bootcamp.name
+      }
+
+      if (service && service.name) {
+        course = service.name
+      }
     }
 
     const newOrder = new Order({
@@ -409,6 +436,11 @@ exports.createKlarnaOrder = async (req, res) => {
         $push: { students: user._id }
       })
 
+      //update service students array
+      await Service.findByIdAndUpdate(bootcampId, {
+        $push: { students: user._id }
+      })
+
       //send mail to admin
       sendMail(res, toUser, subject, html)
 
@@ -429,20 +461,6 @@ exports.readKlarnaOrder = async (req, res) => {
   const bootcampId = req.params.bootcampId
 
   try {
-    let course
-
-    if (
-      bootcampId === 'Silver Plan' ||
-      bootcampId === 'Golden Plan' ||
-      bootcampId === 'Diamond Plan' ||
-      bootcampId === 'bill'
-    ) {
-      course = bootcampId
-    } else {
-      const bootcamp = await Bootcamp.findById(bootcampId)
-      course = bootcamp.name
-    }
-
     const config = {
       withCredentials: true,
       auth: {
@@ -457,9 +475,10 @@ exports.readKlarnaOrder = async (req, res) => {
 
     // check if the order already creted before !!
     const order = await Order.findOne({
-      course,
+      _id: bootcampId,
       orderBy: req.user._id
     })
+
 
     if (!order) {
       return res.status(404).json({
@@ -470,9 +489,10 @@ exports.readKlarnaOrder = async (req, res) => {
 
     // send Get request to Klarna API ( Read the oreder )
     const resp = await axios.get(
-      `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}`,
+      `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}`,
       config
     )
+
     if (resp.data.fraud_status == 'ACCEPTED') {
       await order.updateOne({ orderStatus: 'Verified' })
     }
@@ -510,12 +530,8 @@ exports.PushOrder = async (req, res) => {
 
     // update the order status of verified
     await order.updateOne({ orderStatus: 'Verified' })
-    console.log('Verified')
     // respone with 200
     return res.status(200).json({ success: true })
-
-    console.log('ids : ', bootcampId, userId)
-    return res.status(404).json({ success: false })
   } catch (error) {
     console.log(error)
     res.status(500).json({
@@ -553,7 +569,7 @@ exports.captureOrder = async (req, res) => {
 
     // send acknowled order
     const resp = await axios.post(
-      `https://api.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
+      `https://api.playground.klarna.com/ordermanagement/v1/orders/${order.charge}/captures`,
       { captured_amount: amount },
       config
     )

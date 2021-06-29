@@ -8,7 +8,7 @@ router
   // get all the weeks
   .get(
     AllowIfLogin,
-    grantAccess('readOwn', 'appointment'),
+    grantAccess('readAny', 'appointments'),
     appointmentController.getAllAppointments
   )
   // create a new week

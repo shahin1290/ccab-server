@@ -9,8 +9,8 @@ const Appointment = require('../models/appointmentModel')
 exports.getAllSessions = async (req, res, next) => {
   try {
     const sessions = await Session.find({ instructor: req.user._id })
-
-    console.log()
+      .populate('student', 'name _id')
+      .populate('service', 'name _id')
 
     if (!sessions.length)
       return res
@@ -57,8 +57,6 @@ exports.manageSession = async (req, res, next) => {
 exports.newSession = async (req, res, next) => {
   const { startDate, endDate, notes, selectedAppointment } = req.body
 
-  console.log(selectedAppointment)
-
   const appointment = await Appointment.findOne({
     _id: selectedAppointment
   })
@@ -103,7 +101,7 @@ exports.sessionDetails = async (req, res) => {
     const id = req.params.id
     const session = await Session.findOne({
       _id: id
-    })
+    }).populate('student', 'name _id')
 
     if (!session) {
       return res
@@ -127,11 +125,6 @@ exports.sessionDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updateSession = async function (req, res) {
   try {
-    const errors = getValidationResualt(req)
-    if (errors.length)
-      //returning only first error allways
-      return res.status(400).json({ success: false, message: errors[0].msg })
-
     const id = req.params.id
 
     const update = req.body

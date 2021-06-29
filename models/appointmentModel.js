@@ -35,7 +35,7 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     default: 1
   },
-  status: {
+  expired: {
     type: Boolean,
     require: true,
     default: 'false'

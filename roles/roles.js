@@ -22,8 +22,8 @@ exports.roles = (() => {
     // services
     .readAny('service')
 
- 
- 
+    //appointment
+    .createOwn('appointment')
 
   // Viewer user
   ac.grant('ViewerUser').readAny('profile').readOwn('profile')
@@ -34,13 +34,14 @@ exports.roles = (() => {
     .readAny('profile')
     .readOwn('profile')
     //session
+    .readAny('sessions')
     .readOwn('session')
     .updateOwn('session')
     .deleteOwn('session')
     .createOwn('session')
     //appointment
     .readOwn('appointment')
-
+    .readAny('appointments')
 
   // Mentor user
   ac.grant('MentorUser')

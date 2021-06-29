@@ -57,6 +57,8 @@ exports.manageAppointment = async (req, res, next) => {
 exports.newAppointment = async (req, res, next) => {
   const { instructor, service, sessionNumber } = req.body
 
+  console.log(instructor, service, sessionNumber)
+
   const student = await User.findById(req.user._id)
   try {
     const newAppointment = new Appointment({
@@ -83,13 +85,14 @@ exports.newAppointment = async (req, res, next) => {
 //@route GET api/Appointment/:id
 //@accesss private (allow for Admin)
 exports.view = async (req, res) => {
+  console.log(req.params.id)
   try {
     const id = req.params.id
-    const Appointment = await Appointment.findOne({
+    const appointment = await Appointment.findOne({
       _id: id
-    })
+    }).populate('student', 'name email _id')
 
-    if (!Appointment) {
+    if (!appointment) {
       return res
         .status(404)
         .json({ success: false, message: 'Appointment is not found' })
@@ -97,7 +100,7 @@ exports.view = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: Appointment
+      data: appointment
     })
   } catch (err) {
     return res
