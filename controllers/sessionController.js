@@ -1,5 +1,7 @@
 const Session = require('../models/sessionModel')
 const Appointment = require('../models/appointmentModel')
+const User = require('../models/userModel')
+const { sendMail } = require('../middleware/sendMail')
 
 //********** default route ************
 //@des Get all Session for specific account
@@ -8,9 +10,25 @@ const Appointment = require('../models/appointmentModel')
 
 exports.getAllSessions = async (req, res, next) => {
   try {
-    const sessions = await Session.find({ instructor: req.user._id })
-      .populate('student', 'name _id')
-      .populate('service', 'name _id')
+    let sessions
+
+    if (req.user.user_type === 'AdminUser') {
+      sessions = await Session.find()
+        .populate('student', 'name _id')
+        .populate('service', 'name _id')
+    }
+
+    if (req.user.user_type === 'InstructorUser') {
+      sessions = await Session.find({ instructor: req.user._id })
+        .populate('student', 'name _id')
+        .populate('service', 'name _id')
+    }
+
+    if (req.user.user_type === 'StudentUser') {
+      sessions = await Session.find({ student: req.user._id })
+        .populate('student', 'name _id')
+        .populate('service', 'name _id')
+    }
 
     if (!sessions.length)
       return res
@@ -126,12 +144,38 @@ exports.sessionDetails = async (req, res) => {
 exports.updateSession = async function (req, res) {
   try {
     const id = req.params.id
+    console.log(id)
 
     const update = req.body
 
     const updatedSession = await Session.findOneAndUpdate({ _id: id }, update, {
       new: true
     })
+
+    if (req.body.status) {
+      console.log(req.body.feedback)
+      //send email to admin
+      const admin = await User.findOne({ user_type: 'AdminUser' })
+
+      const toUser = { email: admin.email, name: admin.name }
+      const subject = 'Report Card'
+      const html = {
+        student: '',
+        text: 'We want to inform you that a feedback is submitted.',
+        assignment:
+          '<table> \
+          <tr> <th> Preparation </th> <th>message</th></tr>\
+          <tr>  <td>' +
+          req.body.feedback.prepared +
+          '</td><td>' +
+          req.body.feedback.message +
+          '</td></tr> \
+          </table>',
+        link: 'https://ccab.tech/profile'
+      }
+
+      sendMail(res, toUser, subject, html)
+    }
 
     return res.status(200).json({
       success: true,

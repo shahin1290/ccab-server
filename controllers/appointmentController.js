@@ -8,9 +8,25 @@ const User = require('../models/userModel')
 
 exports.getAllAppointments = async (req, res, next) => {
   try {
-    const appointments = await Appointment.find({ instructor: req.user._id })
-      .populate('student', 'name email _id')
-      .populate('service', 'name _id')
+    let appointments
+
+    if (req.user.user_type === 'AdminUser') {
+      appointments = await Appointment.find()
+        .populate('student', 'name email _id')
+        .populate('service', 'name _id')
+    }
+
+    if (req.user.user_type === 'InstructorUser') {
+      appointments = await Appointment.find({ instructor: req.user._id })
+        .populate('student', 'name email _id')
+        .populate('service', 'name _id')
+    }
+
+    if (req.user.user_type === 'StudentUser') {
+      appointments = await Appointment.find({ student: req.user._id })
+        .populate('student', 'name email _id')
+        .populate('service', 'name _id')
+    }
 
     if (!appointments.length)
       return res
@@ -85,7 +101,6 @@ exports.newAppointment = async (req, res, next) => {
 //@route GET api/Appointment/:id
 //@accesss private (allow for Admin)
 exports.view = async (req, res) => {
-  console.log(req.params.id)
   try {
     const id = req.params.id
     const appointment = await Appointment.findOne({
