@@ -267,7 +267,10 @@ exports.view = async (req, res) => {
       email: user.email,
       phone: user.phoneNumber,
       user_type: user.user_type,
-      avatar: user.avatar
+      avatar: user.avatar,
+      bio: user.bio,
+      skills: user.skills,
+      networkAddresses: user.networkAddresses
     })
   } catch (error) {
     console.log(error)
@@ -299,7 +302,8 @@ exports.viewUserProfile = async (req, res) => {
       email: user.email,
       user_type: user.user_type,
       phone: user.phoneNumber,
-      avatar: user.avatar
+      avatar: user.avatar,
+      bio: user.bio
     })
   } catch (error) {
     console.log(error)
@@ -313,13 +317,14 @@ exports.viewUserProfile = async (req, res) => {
 //@ ROUTE /api/users/profile
 
 exports.update = async (req, res) => {
+  console.log(req.body)
   const errors = getValidationResualt(req)
   if (errors)
     //returning only first error allways
     return res.status(400).json({ success: false, message: errors[0].msg })
 
   try {
-    const { name, email, phoneNumber } = req.body
+    const { name, email, phoneNumber, bio, skills, networkAddresses } = req.body
 
     //check if the name or the email is taken ...>
     const EmailORNameExist = await isEmailOrNameExist(email, name, req.user._id)
@@ -343,15 +348,40 @@ exports.update = async (req, res) => {
       const password = await bcrypt.hash(req.body.password, salt)
       await User.updateOne(
         { _id: user._id },
-        { name: name, email: email, password: password }
+        {
+          name: name,
+          email: email,
+          password: password,
+          bio,
+          skills: JSON.parse(skills),
+          networkAddresses: JSON.parse(networkAddresses)
+        }
       )
     } else if (req.file) {
       await User.updateOne(
         { _id: user._id },
-        { name, email, phoneNumber, avatar: req.file.filename }
+        {
+          name,
+          email,
+          phoneNumber,
+          avatar: req.file.filename,
+          bio,
+          skills: JSON.parse(skills),
+          networkAddresses: JSON.parse(networkAddresses)
+        }
       )
     } else {
-      await User.updateOne({ _id: user._id }, { name, email, phoneNumber })
+      await User.updateOne(
+        { _id: user._id },
+        {
+          name,
+          email,
+          phoneNumber,
+          bio,
+          skills: JSON.parse(skills),
+          networkAddresses: JSON.parse(networkAddresses)
+        }
+      )
     }
 
     // const generateToken = (id) => {
@@ -368,7 +398,10 @@ exports.update = async (req, res) => {
       email: updatedUser.email,
       user_type: updatedUser.user_type,
       token: updatedUser.token,
-      avatar: updatedUser.avatar
+      avatar: updatedUser.avatar,
+      bio: updatedUser.bio,
+      skills: updatedUser.skills,
+      networkAddresses: updatedUser.networkAddresses
     })
   } catch (error) {
     console.log(error)

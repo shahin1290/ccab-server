@@ -26,6 +26,17 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String
   },
+
+  networkAddresses: [
+    {
+      network: { type: String },
+      address: { type: String }
+    }
+  ],
+  bio: {
+    type: String
+  },
+  skills: [{ type: String }],
   AccessUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +48,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: true,
     default: 'StudentUser',
-    enum: ['ViewerUser', 'StudentUser', 'MentorUser', 'AdminUser']
+    enum: [
+      'ViewerUser',
+      'StudentUser',
+      'MentorUser',
+      'AdminUser',
+      'InstructorUser'
+    ]
   },
 
   token: {
@@ -46,6 +63,7 @@ const userSchema = new mongoose.Schema({
 
   createdAt: {
     type: Date,
+    default: Date.now
   }
 })
 

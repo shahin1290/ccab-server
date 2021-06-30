@@ -122,6 +122,9 @@ const quizRoutes = require('./routes/quizRoutes')
 const orderRoutes = require('./routes/orderRoutes')
 const requestRoutes = require('./routes/requestRoutes')
 const jobRoutes = require('./routes/jobRoutes')
+const serviceRoutes = require('./routes/serviceRoutes')
+const sessionRoutes = require('./routes/sessionRoutes')
+const appointmentRoutes = require('./routes/appointmentRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -134,6 +137,9 @@ app.use('/api/quizzes', quizRoutes)
 app.use('/api/order', orderRoutes)
 app.use('/api/request', requestRoutes)
 app.use('/api/job', jobRoutes)
+app.use('/api/service', serviceRoutes)
+app.use('/api/session', sessionRoutes)
+app.use('/api/appointment', appointmentRoutes)
 
 
 app.listen(PORT, () => {
