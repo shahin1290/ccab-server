@@ -117,5 +117,12 @@ exports.roles = (() => {
     .createAny('service')
     .deleteAny('service')
     .updateAny('service')
+
+    // service category
+    .readAny('serviceCategories')
+    .readAny('serviceCategory')
+    .createAny('serviceCategory')
+    .deleteAny('serviceCategory')
+    .updateAny('serviceCategory')
   return ac
 })()
