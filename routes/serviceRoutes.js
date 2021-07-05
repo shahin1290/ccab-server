@@ -7,16 +7,25 @@ const {
   uploadCallBack
 } = require('../middleware/serviceValid')
 
-router
-  .route('/')
-  .get(serviceController.getAllServices)
+router.route('/').get(serviceController.getAllServices)
 
-  router
+router
   .route('/admin/new-service')
-  .get( AllowIfLogin,
+  .get(
+    AllowIfLogin,
     grantAccess('createAny', 'service'),
-    serviceController.newService)
- 
+    serviceController.newService
+  )
+
+router
+  .route('/update-instructors')
+  // update  instructor array
+  .put(
+    AllowIfLogin,
+    grantAccess('updateOwn', 'service'),
+    serviceController.updateServiceInstructors
+  )
+
 router
   .route('/manage')
   .get(

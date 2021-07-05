@@ -18,10 +18,16 @@ router
     serviceCategoryController.new
   )
 
+
+
 router
   .route('/:id')
   // specific week details
-  .get(AllowIfLogin, grantAccess('readAny', 'serviceCategory'), serviceCategoryController.view)
+  .get(
+    AllowIfLogin,
+    grantAccess('readAny', 'serviceCategory'),
+    serviceCategoryController.view
+  )
   // update a specific week
   .put(
     AllowIfLogin,

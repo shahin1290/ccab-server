@@ -46,6 +46,11 @@ exports.roles = (() => {
     //appointment
     .readOwn('appointment')
     .readAny('appointments')
+    // service category
+    .readAny('serviceCategories')
+
+    // service category
+    .updateOwn('service')
 
   // Mentor user
   ac.grant('MentorUser')
@@ -119,7 +124,6 @@ exports.roles = (() => {
     .updateAny('service')
 
     // service category
-    .readAny('serviceCategories')
     .readAny('serviceCategory')
     .createAny('serviceCategory')
     .deleteAny('serviceCategory')

@@ -185,7 +185,7 @@ exports.updateService = async function (req, res) {
       update = { ...update, students: JSON.parse(req.body.students) }
     }
 
-    if (req.body.students) {
+    if (req.body.instructors) {
       update = { ...update, instructors: JSON.parse(req.body.instructors) }
     }
 
@@ -204,6 +204,44 @@ exports.updateService = async function (req, res) {
     return res.status(200).json({
       success: true,
       data: updatedservice
+    })
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: 'Server Error : ' + err })
+  }
+}
+
+//@des PUT Update single service for specific account
+//@route PUT api/v2/service/:id
+//@accesss private (allow for Admin)
+exports.updateServiceInstructors = async function (req, res) {
+  try {
+    const errors = getValidationResualt(req)
+    if (errors.length)
+      //returning only first error allways
+      return res.status(400).json({ success: false, message: errors[0].msg })
+
+    const { categories } = req.body
+
+    await Service.updateMany(
+      {
+        instructors: { $in: req.user._id }
+      },
+      { $pull: { instructors: req.user._id } }
+    )
+
+    await Service.updateMany(
+      {
+        category: { $in: categories }
+      },
+      { $addToSet: { instructors: req.user._id } }
+    )
+
+    return res.status(200).json({
+      data: null,
+      message: 'Instructor hase been added',
+      success: true
     })
   } catch (err) {
     return res

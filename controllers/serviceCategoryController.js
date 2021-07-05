@@ -7,12 +7,7 @@ const User = require('../models/userModel')
 //@ access Protected/Admin, Mentor and Student
 exports.getServiceCategories = async (req, res) => {
   try {
-    let serviceCategories
-
-    if (req.user.user_type === 'AdminUser') {
-      serviceCategories = await ServiceCategory.find()
-    }
-
+    const serviceCategories = await ServiceCategory.find()
     if (serviceCategories.length)
       return res.status(201).json({ success: true, data: serviceCategories })
   } catch (error) {
