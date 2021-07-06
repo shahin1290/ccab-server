@@ -38,11 +38,10 @@ app.post('/contact', (req, res, next) => {
 //get currency and geo location
 app.post('/currency-convert', async (req, res, next) => {
   try {
-    const { currency, country } = req.body
+    const { currency, country, fromCurrency } = req.body
 
     const apiKey='6068a971e6754bdf9d3b0ddc706779b0'
 
-    const fromCurrency = 'USD'
     const toCurrency = currency
     const query = fromCurrency + '_' + toCurrency
 
