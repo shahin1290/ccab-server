@@ -18,7 +18,10 @@ exports.getRequests = async (req, res) => {
   try {
     let requests
 
-    if (req.user.user_type === 'AdminUser' || req.user.user_type === 'AccountantUser') {
+    if (
+      req.user.user_type === 'AdminUser' ||
+      req.user.user_type === 'AccountantUser'
+    ) {
       requests = await Request.find().populate(
         'requestedUser',
         'name email _id'
@@ -30,6 +33,13 @@ exports.getRequests = async (req, res) => {
         'requestedUser',
         'name email _id'
       )
+    }
+
+    if (requests.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No Request Bill found!'
+      })
     }
 
     if (requests.length)
