@@ -52,6 +52,17 @@ exports.roles = (() => {
     // service category
     .updateOwn('service')
 
+  // Accountant user
+  ac.grant('AccountantUser')
+    //profile
+    .readAny('profile')
+    .readOwn('profile')
+    //requests
+    .readAny('request')
+    .createAny('request')
+    .updateAny('request')
+    .deleteAny('request')
+
   // Mentor user
   ac.grant('MentorUser')
     // profiles

@@ -18,7 +18,7 @@ exports.getRequests = async (req, res) => {
   try {
     let requests
 
-    if (req.user.user_type === 'AdminUser') {
+    if (req.user.user_type === 'AdminUser' || req.user.user_type === 'AccountantUser') {
       requests = await Request.find().populate(
         'requestedUser',
         'name email _id'

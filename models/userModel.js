@@ -59,7 +59,8 @@ const userSchema = new mongoose.Schema({
       'StudentUser',
       'MentorUser',
       'AdminUser',
-      'InstructorUser'
+      'InstructorUser',
+      'AccountantUser'
     ]
   },
 
