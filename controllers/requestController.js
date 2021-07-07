@@ -55,7 +55,8 @@ exports.getRequests = async (req, res) => {
 //@ ROUTE /api/weeks/:bootcampId
 //@ access Protected/Admin, Mentor
 exports.new = async (req, res) => {
-  const { name, price, selectedStudent, currency, status } = req.body
+  const { name, price, selectedStudent, currency, status, expiryDate } =
+    req.body
   try {
     const user = await User.findOne({ email: selectedStudent })
     const newRequest = new Request({
@@ -63,7 +64,8 @@ exports.new = async (req, res) => {
       amount: price,
       requestedUser: user._id,
       status,
-      currency
+      currency,
+      expireAt: expiryDate
     })
 
     const request = await newRequest.save()
@@ -109,6 +111,7 @@ exports.view = async (req, res) => {
 // @ ROUTE /api/weeks/:bootcampId/:weekId
 //@ access Protected/Admin and mentor
 exports.update = async (req, res) => {
+  
   try {
     const { id } = req.params
 

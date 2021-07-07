@@ -22,8 +22,9 @@ const requestSchema = new mongoose.Schema({
     enum: ['Not Paid', 'Paid']
   },
 
-  paidAt: {
-    type: Date
+  expireAt: {
+    type: Date,
+    default: Date.now
   },
 
   createdAt: {
