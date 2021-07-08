@@ -359,7 +359,7 @@ exports.update = async (req, res) => {
             : req.body.video_path,
         arabic_video_path: req.body.arabic_video_path,
         sections,
-        show: req.body.show||true
+        show: req.body.show
       }
 
       console.log(updatedObject)
