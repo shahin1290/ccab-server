@@ -225,7 +225,7 @@ exports.new = async (req, res) => {
     }
     const AdminmailStatus = sendMail(
       res,
-      { email: 'te.abdul.m@codifycollege.se', name: 'Admin' },
+      { email: 'info@codifycollege.se', name: 'Admin' },
       'A New Students' + req.user.name,
       htmlToAdmin
     )
@@ -637,7 +637,7 @@ exports.register = async (req, res) => {
     }
     const AdminmailStatus = sendMail(
       res,
-      { email: 'te.abdul.m@codifycollege.se', name: 'Admin' },
+      { email: 'info@codifycollege.se', name: 'Admin' },
       'A New Students Registered :' + name,
       htmlToAdmin
     )
