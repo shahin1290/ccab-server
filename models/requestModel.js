@@ -8,6 +8,8 @@ const requestSchema = new mongoose.Schema({
 
   amount: { type: Number, required: true },
 
+  currency: { type: String, required: true },
+
   requestedUser: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -16,12 +18,13 @@ const requestSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    default: 'Sent',
-    enum: ['Sent', 'Paid']
+    default: 'Not Paid',
+    enum: ['Not Paid', 'Paid']
   },
 
-  paidAt: {
-    type: Date
+  expireAt: {
+    type: Date,
+    default: Date.now
   },
 
   createdAt: {

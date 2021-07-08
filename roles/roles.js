@@ -46,6 +46,22 @@ exports.roles = (() => {
     //appointment
     .readOwn('appointment')
     .readAny('appointments')
+    // service category
+    .readAny('serviceCategories')
+
+    // service category
+    .updateOwn('service')
+
+  // Accountant user
+  ac.grant('AccountantUser')
+    //profile
+    .readAny('profile')
+    .readOwn('profile')
+    //requests
+    .readAny('request')
+    .createAny('request')
+    .updateAny('request')
+    .deleteAny('request')
 
   // Mentor user
   ac.grant('MentorUser')
@@ -117,5 +133,11 @@ exports.roles = (() => {
     .createAny('service')
     .deleteAny('service')
     .updateAny('service')
+
+    // service category
+    .readAny('serviceCategory')
+    .createAny('serviceCategory')
+    .deleteAny('serviceCategory')
+    .updateAny('serviceCategory')
   return ac
 })()

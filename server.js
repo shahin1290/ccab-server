@@ -38,11 +38,10 @@ app.post('/contact', (req, res, next) => {
 //get currency and geo location
 app.post('/currency-convert', async (req, res, next) => {
   try {
-    const { currency, country } = req.body
+    const { currency, country, fromCurrency } = req.body
 
     const apiKey='6068a971e6754bdf9d3b0ddc706779b0'
 
-    const fromCurrency = 'USD'
     const toCurrency = currency
     const query = fromCurrency + '_' + toCurrency
 
@@ -125,6 +124,7 @@ const jobRoutes = require('./routes/jobRoutes')
 const serviceRoutes = require('./routes/serviceRoutes')
 const sessionRoutes = require('./routes/sessionRoutes')
 const appointmentRoutes = require('./routes/appointmentRoutes')
+const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -140,6 +140,7 @@ app.use('/api/job', jobRoutes)
 app.use('/api/service', serviceRoutes)
 app.use('/api/session', sessionRoutes)
 app.use('/api/appointment', appointmentRoutes)
+app.use('/api/serviceCategory', serviceCategoryRoutes)
 
 
 app.listen(PORT, () => {

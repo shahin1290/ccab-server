@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
     type: String
   },
   skills: [{ type: String }],
+  teachingFields: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ServiceCategory'
+    }
+  ],
   AccessUsers: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -53,7 +59,8 @@ const userSchema = new mongoose.Schema({
       'StudentUser',
       'MentorUser',
       'AdminUser',
-      'InstructorUser'
+      'InstructorUser',
+      'AccountantUser'
     ]
   },
 

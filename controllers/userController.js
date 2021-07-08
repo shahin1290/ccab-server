@@ -252,7 +252,10 @@ exports.view = async (req, res) => {
   try {
     console.log(req.user)
 
-    var user = await User.findById(req.user._id)
+    var user = await User.findById(req.user._id).populate(
+      'teachingFields',
+      'name _id'
+    )
 
     if (!user) {
       return res.status(404).json({
@@ -270,7 +273,8 @@ exports.view = async (req, res) => {
       avatar: user.avatar,
       bio: user.bio,
       skills: user.skills,
-      networkAddresses: user.networkAddresses
+      networkAddresses: user.networkAddresses,
+      teachingFields: user.teachingFields
     })
   } catch (error) {
     console.log(error)
@@ -317,14 +321,21 @@ exports.viewUserProfile = async (req, res) => {
 //@ ROUTE /api/users/profile
 
 exports.update = async (req, res) => {
-  console.log(req.body)
   const errors = getValidationResualt(req)
   if (errors)
     //returning only first error allways
     return res.status(400).json({ success: false, message: errors[0].msg })
 
   try {
-    const { name, email, phoneNumber, bio, skills, networkAddresses } = req.body
+    const {
+      name,
+      email,
+      phoneNumber,
+      bio,
+      skills,
+      networkAddresses,
+      teachingFields
+    } = req.body
 
     //check if the name or the email is taken ...>
     const EmailORNameExist = await isEmailOrNameExist(email, name, req.user._id)
@@ -354,7 +365,8 @@ exports.update = async (req, res) => {
           password: password,
           bio,
           skills: JSON.parse(skills),
-          networkAddresses: JSON.parse(networkAddresses)
+          networkAddresses: JSON.parse(networkAddresses),
+          teachingFields: JSON.parse(teachingFields)
         }
       )
     } else if (req.file) {
@@ -367,7 +379,8 @@ exports.update = async (req, res) => {
           avatar: req.file.filename,
           bio,
           skills: JSON.parse(skills),
-          networkAddresses: JSON.parse(networkAddresses)
+          networkAddresses: JSON.parse(networkAddresses),
+          teachingFields: JSON.parse(teachingFields)
         }
       )
     } else {
@@ -379,7 +392,8 @@ exports.update = async (req, res) => {
           phoneNumber,
           bio,
           skills: JSON.parse(skills),
-          networkAddresses: JSON.parse(networkAddresses)
+          networkAddresses: JSON.parse(networkAddresses),
+          teachingFields: JSON.parse(teachingFields)
         }
       )
     }
