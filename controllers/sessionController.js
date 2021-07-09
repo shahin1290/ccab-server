@@ -144,9 +144,10 @@ exports.sessionDetails = async (req, res) => {
 exports.updateSession = async function (req, res) {
   try {
     const id = req.params.id
-    console.log(id)
 
     const update = req.body
+
+    console.log('update', update);
 
     const updatedSession = await Session.findOneAndUpdate({ _id: id }, update, {
       new: true

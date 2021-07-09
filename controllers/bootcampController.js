@@ -2,6 +2,10 @@ const { validationResult } = require('express-validator')
 const Bootcamp = require('./../models/bootcampModel')
 const Week = require('./../models/weekModel')
 const Day = require('./../models/dayModel')
+const Quiz = require('./../models/quizModel')
+const Task = require('./../models/taskModel')
+const QuizAnswer = require('./../models/quizAnswerModel')
+
 const fs = require('fs')
 
 //********** Functions ************************************
@@ -53,7 +57,7 @@ const createNewDays = async (updatedBootcamp) => {
       const savedDay = await newDay.save()
       dayArr.push(savedDay._id)
     }
-    await Week.findByIdAndUpdate(week._id, {days: dayArr})
+    await Week.findByIdAndUpdate(week._id, { days: dayArr })
   }
 }
 
@@ -242,6 +246,42 @@ exports.updateBootcamp = async function (req, res) {
 
     if (req.body.students) {
       update = { ...update, students: JSON.parse(req.body.students) }
+
+      //if new student is added, create all previous quiz and task answers
+      const newStudetArray = JSON.parse(req.body.students).filter(
+        (x) => bootcamp.students.indexOf(x) === -1
+      )
+      const Quizzess = await Quiz.find({ bootcamp })
+
+      if (Quizzess.length > 0) {
+        for (student of newStudetArray) {
+          Quizzess.forEach(async (quiz) => {
+            //craete the answers
+            const quizAnswer = new QuizAnswer({
+              user: student,
+              quiz: quiz._id
+            })
+
+            await quizAnswer.save()
+          })
+        }
+      }
+
+      const tasks = await Task.find({ bootcamp })
+
+      if (tasks.length > 0) {
+        for (student of newStudetArray) {
+          tasks.forEach(async (task) => {
+            //craete the answers
+            const answer = new Answer({
+              user: student,
+              answer: answer._id
+            })
+
+            await answer.save()
+          })
+        }
+      }
     }
 
     if (req.body.info_list) {
@@ -344,13 +384,17 @@ exports.deleteBootcamp = async function (req, res) {
 
         //check if day contains any image reference
 
-        const imageElemntArr = day.source_code&&day.source_code.filter(
-          (item) => item.element_type === 'image'
-        )
-           // console.log(imageElemntArr);
+        const imageElemntArr =
+          day.source_code &&
+          day.source_code.filter((item) => item.element_type === 'image')
+        // console.log(imageElemntArr);
         //remove image from public folder
-        if (imageElemntArr&&imageElemntArr.length) {
-          imageElemntArr.forEach((el) => fs.unlinkSync(el.element_text,(err)=>{console.log(err);}))
+        if (imageElemntArr && imageElemntArr.length) {
+          imageElemntArr.forEach((el) =>
+            fs.unlinkSync(el.element_text, (err) => {
+              console.log(err)
+            })
+          )
         }
       })
     })

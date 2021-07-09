@@ -5,6 +5,8 @@ const Task = require('../models/taskModel')
 const jwt = require('jsonwebtoken')
 const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
+const Quiz = require('../models/quizModel')
+const QuizAnswer = require('../models/quizAnswerModel')
 const { sendMail } = require('../middleware/sendMail')
 const { Access } = require('accesscontrol')
 
@@ -245,7 +247,6 @@ exports.new = async (req, res) => {
 //@ ROUTE /api/users/profile
 exports.view = async (req, res) => {
   try {
-
     var user = await User.findById(req.user._id).populate(
       'teachingFields',
       'name _id'
@@ -598,6 +599,45 @@ exports.register = async (req, res) => {
     await user.save()
 
     const newUser = await User.findOne({ email }).select('-password')
+
+    //update free bootcamp students array
+    const freeBootcamps = await Bootcamp.find({ price: 0 })
+
+    if (freeBootcamps.length > 0) {
+      for (bootcamp of freeBootcamps) {
+        await Bootcamp.findByIdAndUpdate(bootcamp._id, {
+          $push: { students: newUser._id }
+        })
+      }
+
+      const Quizzess = await Quiz.find({ bootcamp })
+
+      if (Quizzess.length > 0) {
+        Quizzess.forEach(async (quiz) => {
+          //craete the answers
+          const quizAnswer = new QuizAnswer({
+            user: newUser,
+            quiz: quiz._id
+          })
+
+          await quizAnswer.save()
+        })
+      }
+
+      const tasks = await Task.find({ bootcamp })
+
+      if (tasks.length > 0) {
+        tasks.forEach(async (task) => {
+          //craete the answers
+          const answer = new Answer({
+            user: newUser,
+            task: task._id
+          })
+
+          await answer.save()
+        })
+      }
+    }
 
     //send mail .............>
     const toUser = { email: email, name: name }
