@@ -1,8 +1,7 @@
 const { validationResult } = require('express-validator')
 const Service = require('../models/serviceModel')
-const Week = require('../models/weekModel')
-const Day = require('../models/dayModel')
-const fs = require('fs')
+const User = require('../models/userModel')
+const ServiceCategory = require('../models/serviceCategoryModel')
 
 //********** Functions ************************************
 
@@ -186,7 +185,22 @@ exports.updateService = async function (req, res) {
     }
 
     if (req.body.instructors) {
-      update = { ...update, instructors: JSON.parse(req.body.instructors) }
+      //update instructor array if the category changes
+      if (req.body.category !== service.category) {
+        const categoryId = await ServiceCategory.findOne({
+          name: req.body.category
+        })
+        const users = await User.find({
+          teachingFields: categoryId
+        })
+
+        console.log('users', users)
+        update = {
+          ...update,
+          instructors: [...JSON.parse(req.body.instructors), ...users]
+        }
+      } else
+        update = { ...update, instructors: JSON.parse(req.body.instructors) }
     }
 
     if (req.body.info_list) {

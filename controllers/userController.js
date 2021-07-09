@@ -62,7 +62,6 @@ exports.getUsers = async (req, res) => {
         singleUser = await User.findById(user.AccessUsers[i])
         AllUsers.push(singleUser)
       }
-      console.log(user.AccessUsers)
       res.status(200).json({ success: true, data: AllUsers })
     }
 
@@ -109,7 +108,6 @@ exports.getUsersNumbers = async (req, res) => {
         message: 'No users found!'
       })
     }
-    console.log(users)
     res.status(200).json({ success: true, data: users.length })
   } catch (error) {
     console.log(error.message)
@@ -123,7 +121,6 @@ exports.getUsersNumbers = async (req, res) => {
 //@ ROUTE /api/users
 // Register a User
 exports.new = async (req, res) => {
-  console.log(req.body)
   // checking the user input!
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
@@ -186,7 +183,6 @@ exports.new = async (req, res) => {
     //   }
     // }
 
-    console.log('REQ.User :...' + req.user)
     //send mail .............>
     const toUser = { email: email, name: name }
     const subjet = 'Welcome to Codify Student Dashboard'
@@ -230,7 +226,6 @@ exports.new = async (req, res) => {
       htmlToAdmin
     )
 
-    console.log(AdminmailStatus)
     //console.log('mailStatus: '+( mailStatus));
 
     if (mailStatus)
@@ -250,7 +245,6 @@ exports.new = async (req, res) => {
 //@ ROUTE /api/users/profile
 exports.view = async (req, res) => {
   try {
-    console.log(req.user)
 
     var user = await User.findById(req.user._id).populate(
       'teachingFields',
@@ -516,7 +510,6 @@ exports.isTokenValid = async (req, res, next) => {
     ) {
       token = req.headers.authorization.split(' ')[1]
 
-      console.log('token from controller : '.green, token, '*'.green)
       if (token == 'undefined')
         return res
           .status(401)
@@ -642,7 +635,6 @@ exports.register = async (req, res) => {
       htmlToAdmin
     )
 
-    console.log(AdminmailStatus)
     //console.log('mailStatus: '+( mailStatus));
 
     if (mailStatus && AdminmailStatus)
