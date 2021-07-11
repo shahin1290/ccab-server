@@ -565,14 +565,14 @@ exports.register = async (req, res) => {
     const { name, email, password, phoneNumber, gender, language } = req.body
 
     // check if the name or email exist
-    const EmailORNameExist = await isEmailOrNameExist(email, name)
+    const EmailORNameExist = await isEmailOrNameExist(email)
     //console.log('EmailORNameExist : ',EmailORNameExist.length);
 
     //if true : return error
     if (EmailORNameExist.length)
       return res
         .status(400)
-        .json({ success: false, message: 'Name OR Email is Taken!' })
+        .json({ success: false, message: 'Email is already in use!' })
 
     // how to verify that email was taken or not
     let user = await User.findOne({ email })
