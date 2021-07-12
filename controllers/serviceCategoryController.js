@@ -8,6 +8,13 @@ const User = require('../models/userModel')
 exports.getServiceCategories = async (req, res) => {
   try {
     const serviceCategories = await ServiceCategory.find()
+
+    if (serviceCategories.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No Category found!'
+      })
+    }
     if (serviceCategories.length)
       return res.status(201).json({ success: true, data: serviceCategories })
   } catch (error) {

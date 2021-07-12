@@ -5,6 +5,8 @@ const Task = require('../models/taskModel')
 const jwt = require('jsonwebtoken')
 const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
+const Quiz = require('../models/quizModel')
+const QuizAnswer = require('../models/quizAnswerModel')
 const { sendMail } = require('../middleware/sendMail')
 const { Access } = require('accesscontrol')
 
@@ -62,7 +64,6 @@ exports.getUsers = async (req, res) => {
         singleUser = await User.findById(user.AccessUsers[i])
         AllUsers.push(singleUser)
       }
-      console.log(user.AccessUsers)
       res.status(200).json({ success: true, data: AllUsers })
     }
 
@@ -109,7 +110,6 @@ exports.getUsersNumbers = async (req, res) => {
         message: 'No users found!'
       })
     }
-    console.log(users)
     res.status(200).json({ success: true, data: users.length })
   } catch (error) {
     console.log(error.message)
@@ -123,7 +123,6 @@ exports.getUsersNumbers = async (req, res) => {
 //@ ROUTE /api/users
 // Register a User
 exports.new = async (req, res) => {
-  console.log(req.body)
   // checking the user input!
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
@@ -186,7 +185,6 @@ exports.new = async (req, res) => {
     //   }
     // }
 
-    console.log('REQ.User :...' + req.user)
     //send mail .............>
     const toUser = { email: email, name: name }
     const subjet = 'Welcome to Codify Student Dashboard'
@@ -230,7 +228,6 @@ exports.new = async (req, res) => {
       htmlToAdmin
     )
 
-    console.log(AdminmailStatus)
     //console.log('mailStatus: '+( mailStatus));
 
     if (mailStatus)
@@ -250,8 +247,6 @@ exports.new = async (req, res) => {
 //@ ROUTE /api/users/profile
 exports.view = async (req, res) => {
   try {
-    console.log(req.user)
-
     var user = await User.findById(req.user._id).populate(
       'teachingFields',
       'name _id'
@@ -516,7 +511,6 @@ exports.isTokenValid = async (req, res, next) => {
     ) {
       token = req.headers.authorization.split(' ')[1]
 
-      console.log('token from controller : '.green, token, '*'.green)
       if (token == 'undefined')
         return res
           .status(401)
@@ -571,14 +565,14 @@ exports.register = async (req, res) => {
     const { name, email, password, phoneNumber, gender, language } = req.body
 
     // check if the name or email exist
-    const EmailORNameExist = await isEmailOrNameExist(email, name)
+    const EmailORNameExist = await isEmailOrNameExist(email)
     //console.log('EmailORNameExist : ',EmailORNameExist.length);
 
     //if true : return error
     if (EmailORNameExist.length)
       return res
         .status(400)
-        .json({ success: false, message: 'Name OR Email is Taken!' })
+        .json({ success: false, message: 'Email is already in use!' })
 
     // how to verify that email was taken or not
     let user = await User.findOne({ email })
@@ -605,6 +599,45 @@ exports.register = async (req, res) => {
     await user.save()
 
     const newUser = await User.findOne({ email }).select('-password')
+
+    //update free bootcamp students array
+    const freeBootcamps = await Bootcamp.find({ price: 0 })
+
+    if (freeBootcamps.length > 0) {
+      for (bootcamp of freeBootcamps) {
+        await Bootcamp.findByIdAndUpdate(bootcamp._id, {
+          $push: { students: newUser._id }
+        })
+      }
+
+      const Quizzess = await Quiz.find({ bootcamp })
+
+      if (Quizzess.length > 0) {
+        Quizzess.forEach(async (quiz) => {
+          //craete the answers
+          const quizAnswer = new QuizAnswer({
+            user: newUser,
+            quiz: quiz._id
+          })
+
+          await quizAnswer.save()
+        })
+      }
+
+      const tasks = await Task.find({ bootcamp })
+
+      if (tasks.length > 0) {
+        tasks.forEach(async (task) => {
+          //craete the answers
+          const answer = new Answer({
+            user: newUser,
+            task: task._id
+          })
+
+          await answer.save()
+        })
+      }
+    }
 
     //send mail .............>
     const toUser = { email: email, name: name }
@@ -642,7 +675,6 @@ exports.register = async (req, res) => {
       htmlToAdmin
     )
 
-    console.log(AdminmailStatus)
     //console.log('mailStatus: '+( mailStatus));
 
     if (mailStatus && AdminmailStatus)

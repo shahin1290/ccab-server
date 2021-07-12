@@ -288,7 +288,6 @@ exports.update = async (req, res) => {
       })
     }
 
-
     const source_code = []
 
     if (req.body.title) {
@@ -362,13 +361,11 @@ exports.update = async (req, res) => {
         show: req.body.show
       }
 
-      console.log(updatedObject)
-
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {
       new: true
     })
 
-    console.log(updatedDay);
+    console.log(updatedDay)
 
     return res.status(200).json({
       success: true,

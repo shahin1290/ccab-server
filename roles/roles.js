@@ -49,7 +49,7 @@ exports.roles = (() => {
     // service category
     .readAny('serviceCategories')
 
-    // service category
+    // service 
     .updateOwn('service')
 
   // Accountant user
