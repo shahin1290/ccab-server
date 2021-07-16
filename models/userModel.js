@@ -68,6 +68,8 @@ const userSchema = new mongoose.Schema({
     type: String
   },
 
+  status: { type: String, enum: ['online', 'offline'] },
+
   createdAt: {
     type: Date,
     default: Date.now
