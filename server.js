@@ -5,10 +5,13 @@ const morgan = require('morgan')
 const path = require('path')
 const { sendContactMail } = require('./util/contactMail')
 const app = express()
-var cors = require('cors')
+const cors = require('cors')
 const PORT = process.env.PORT || process.env.SERVER_PORT
 const myDb = require('./database/db')
 const axios = require('axios')
+const User = require('./models/userModel')
+const Performance = require('./models/performanceModel')
+const cron = require('node-cron')
 
 myDb()
 
@@ -64,6 +67,16 @@ app.post('/currency-convert', async (req, res, next) => {
     return res.status(500).json({
       message: error
     })
+  }
+})
+
+cron.schedule('0 2 * * *', async () => {
+  const students = await User.find({ user_type: 'StudentUser' })
+  for (student of students) {
+    const newPerformance = new Performance({
+      student: student._id
+    })
+    await newPerformance.save()
   }
 })
 
@@ -144,6 +157,69 @@ app.use('/api/appointment', appointmentRoutes)
 app.use('/api/serviceCategory', serviceCategoryRoutes)
 app.use('/api/performance', performanceRoutes)
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)
+})
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: '*'
+  }
+})
+
+const users = {}
+
+io.on('connection', function (socket) {
+  console.log('a user connected')
+
+  socket.on('login', function (data, callback) {
+    console.log('a user ' + data.userId + ' connected')
+    // saving userId to object with socket ID
+    users[socket.id] = data.userId
+
+    callback()
+  })
+
+  socket.on('disconnect', async function () {
+    console.log('user ' + users[socket.id] + ' disconnected')
+
+    try {
+      const start = new Date().setHours(0, 0, 0, 0)
+
+      const end = new Date().setHours(23, 59, 59, 999)
+
+      const performance = await Performance.findOne({
+        createdAt: { $gte: start, $lt: end },
+        student: users[socket.id]
+      })
+
+      const onlineTimeSpent =
+        performance.onlineTimeSpent +
+        Math.trunc(
+          (new Date().getTime() - new Date(performance.online).getTime()) / 1000
+        )
+
+      const update = {
+        onlineTimeSpent,
+
+        onlineScore:
+          onlineTimeSpent > 14400
+            ? 100
+            : Math.trunc((onlineTimeSpent * 100) / 14400)
+      }
+
+      const updatedPerformance = await Performance.findOneAndUpdate(
+        { createdAt: { $gte: start, $lt: end }, student: users[socket.id] },
+        update,
+        {
+          new: true
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
+
+    // remove saved socket from users object
+    delete users[socket.id]
+  })
 })

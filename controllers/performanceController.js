@@ -1,6 +1,10 @@
 const Performance = require('../models/performanceModel')
 const Day = require('../models/dayModel')
 const Bootcamp = require('../models/bootcampModel')
+const Quiz = require('../models/quizModel')
+const Task = require('../models/taskModel')
+const Answer = require('../models/answerModel')
+const QuizAnswer = require('../models/quizAnswerModel')
 
 //********** default route ************
 //@des Get all Performance for specific account
@@ -16,10 +20,9 @@ exports.getAllPerformances = async (req, res, next) => {
     }
 
     if (req.user.user_type === 'StudentUser') {
-      performances = await Performance.find({ student: req.user._id }).populate(
-        'student',
-        'name _id'
-      )
+      performances = await Performance.find({ student: req.user._id })
+        .sort({ createdAt: 'asc' })
+        .populate('student', 'name _id')
     }
 
     if (!performances.length)
@@ -89,11 +92,11 @@ exports.newPerformance = async (req, res, next) => {
 exports.performanceDetails = async (req, res) => {
   try {
     const id = req.params.id
-    const Performance = await Performance.findOne({
+    const performance = await Performance.findOne({
       _id: id
     }).populate('student', 'name _id')
 
-    if (!Performance) {
+    if (!performance) {
       return res
         .status(404)
         .json({ success: false, message: 'Performance is not found' })
@@ -115,26 +118,166 @@ exports.performanceDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updatePerformance = async function (req, res) {
   try {
-    const id = req.params.id
-
-    const { dayId, bootcampId } = req.body
+    const {
+      dayId,
+      bootcampId,
+      taskId,
+      quizId,
+      connected,
+      taskResult,
+      student
+    } = req.body
 
     const day = await Day.findById(dayId)
 
-    const performance = await Performance.findById(id)
+    const start = new Date().setHours(0, 0, 0, 0)
+
+    const end = new Date().setHours(23, 59, 59, 999)
+
+    const performance = await Performance.findOne({
+      createdAt: { $gte: start, $lt: end },
+      student: req.user._id
+    })
 
     const course = await Bootcamp.findById(bootcampId)
 
+    let update
 
-    const update = {
-      watchingLectures: [
-        ...performance.watchingLectures,
-        { lecture: day._id, course: bootcampId }
-      ]
+    if (connected) {
+      update = {
+        online: new Date()
+      }
     }
 
+    if (dayId && bootcampId) {
+      update = {
+        watchingLectures: [
+          ...performance.watchingLectures,
+          { lecture: day._id, course: course._id }
+        ],
+        watchingLectureScore: 100
+      }
+    }
+
+    if (taskId) {
+      const task = await Task.findById(taskId)
+
+      update = {
+        submittedTask: taskId,
+        submittedTaskScore: 100
+      }
+    }
+
+    if (taskResult) {
+      let resultScore
+
+      if (taskResult === 'Failed') resultScore = 30
+
+      if (taskResult === 'Not Bad') resultScore = 65
+
+      if (taskResult === 'Good') resultScore = 85
+
+      if (taskResult === 'Excellent') resultScore = 100
+
+      await Performance.findOneAndUpdate(
+        {
+          createdAt: { $gte: start, $lt: end },
+          student
+        },
+        {
+          taskResultScore: resultScore
+        }
+      )
+    }
+
+    if (quizId) {
+      const quiz = await Quiz.findById(quizId)
+
+      const quizAnswer = await QuizAnswer.findOne({
+        quiz: quizId,
+        user: req.user._id
+      })
+
+      let score
+
+      const answerSubmitted = new Date(quizAnswer.createdAt).getTime()
+
+      const twoDaysQuizCreated = new Date(quiz.createdAt).setDate(
+        new Date(quiz.createdAt).getDate() + 2
+      )
+
+      console.log(twoDaysQuizCreated)
+
+      const threeDaysQuizCreated = new Date(quiz.createdAt).setDate(
+        new Date(quiz.createdAt).getDate() + 3
+      )
+
+      const fourDaysQuizCreated = new Date(quiz.createdAt).setDate(
+        new Date(quiz.createdAt).getDate() + 4
+      )
+
+      const fiveDaysQuizCreated = new Date(quiz.createdAt).setDate(
+        new Date(quiz.createdAt).getDate() + 5
+      )
+
+      const sevenDaysQuizCreated = new Date(quiz.createdAt).setDate(
+        new Date(quiz.createdAt).getDate() + 7
+      )
+
+      if (answerSubmitted <= twoDaysQuizCreated) {
+        score = 100
+      }
+
+      if (
+        answerSubmitted > twoDaysQuizCreated &&
+        answerSubmitted <= threeDaysQuizCreated
+      ) {
+        score = 80
+      }
+
+      if (
+        answerSubmitted > threeDaysQuizCreated &&
+        answerSubmitted <= fourDaysQuizCreated
+      ) {
+        score = 70
+      }
+
+      if (
+        answerSubmitted > fourDaysQuizCreated &&
+        answerSubmitted <= fiveDaysQuizCreated
+      ) {
+        score = 60
+      }
+
+      if (
+        answerSubmitted > fiveDaysQuizCreated &&
+        answerSubmitted <= sevenDaysQuizCreated
+      ) {
+        score = 50
+      }
+
+      if (answerSubmitted > sevenDaysQuizCreated) {
+        score = 0
+      }
+
+      let resultScore
+
+      if (quizAnswer.status === 'Failed') resultScore = 30
+
+      if (quizAnswer.status === 'Not Bad') resultScore = 65
+
+      if (quizAnswer.status === 'Good') resultScore = 85
+
+      if (quizAnswer.status === 'Excellent') resultScore = 100
+
+      update = {
+        submittedQuiz: quizId,
+        submittedQuizScore: score,
+        quizResultScore: resultScore
+      }
+    }
     const updatedPerformance = await Performance.findOneAndUpdate(
-      { _id: id },
+      { createdAt: { $gte: start, $lt: end }, student: req.user._id },
       update,
       {
         new: true
