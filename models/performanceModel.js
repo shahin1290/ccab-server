@@ -54,6 +54,11 @@ const performanceSchema = new mongoose.Schema({
     required: true
   },
 
+  bootcamp: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bootcamp'
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

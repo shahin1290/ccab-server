@@ -10,6 +10,7 @@ const PORT = process.env.PORT || process.env.SERVER_PORT
 const myDb = require('./database/db')
 const axios = require('axios')
 const User = require('./models/userModel')
+const Bootcamp = require('./models/bootcampModel')
 const Performance = require('./models/performanceModel')
 const cron = require('node-cron')
 
@@ -70,13 +71,24 @@ app.post('/currency-convert', async (req, res, next) => {
   }
 })
 
+// create new empty performance for bootcamp students every night(12am)
 cron.schedule('0 2 * * *', async () => {
-  const students = await User.find({ user_type: 'StudentUser' })
-  for (student of students) {
-    const newPerformance = new Performance({
-      student: student._id
-    })
-    await newPerformance.save()
+  const bootcamps = await Bootcamp.find()
+
+  for (bootcamp of bootcamps) {
+    const startDate = new Date(bootcamp.start_date).getTime()
+    const today = new Date().setHours(0, 0, 0, 0)
+
+    if (startDate <= today) {
+      const students = bootcamp.students
+      for (student of students) {
+        const newPerformance = new Performance({
+          student: student._id,
+          bootcamp: bootcamp._id
+        })
+        await newPerformance.save()
+      }
+    }
   }
 })
 
@@ -170,20 +182,28 @@ const io = require('socket.io')(server, {
 const users = {}
 
 io.on('connection', function (socket) {
-  console.log('a user connected')
-
-  socket.on('login', function (data, callback) {
-    console.log('a user ' + data.userId + ' connected')
+  socket.on('login', async function (data, callback) {
     // saving userId to object with socket ID
     users[socket.id] = data.userId
+
+    await User.findByIdAndUpdate(data.userId, { status: 'online' })
 
     callback()
   })
 
-  socket.on('disconnect', async function () {
-    console.log('user ' + users[socket.id] + ' disconnected')
+  socket.on('logout', async function (data) {
+    await User.findByIdAndUpdate(data.userId, {
+      status: 'offline'
+    })
+  })
 
+  socket.on('disconnect', async function () {
     try {
+      console.log('disssss', users[socket.id])
+      await User.findByIdAndUpdate(users[socket.id], {
+        status: 'offline'
+      })
+
       const start = new Date().setHours(0, 0, 0, 0)
 
       const end = new Date().setHours(23, 59, 59, 999)
