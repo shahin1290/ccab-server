@@ -82,11 +82,38 @@ cron.schedule('0 2 * * *', async () => {
     if (startDate <= today) {
       const students = bootcamp.students
       for (student of students) {
-        const newPerformance = new Performance({
-          student: student._id,
-          bootcamp: bootcamp._id
-        })
-        await newPerformance.save()
+        //create previous performances from the start date
+        const performances = await Performance.find({ student: student._id })
+
+        if (performances.length === 0) {
+          const differenceInDays = Math.ceil(
+            (today - startDate) / (1000 * 3600 * 24)
+          )
+
+          new Array(differenceInDays + 1).fill(0).forEach(async (el, index) => {
+            //Get today's date using the JavaScript Date object.
+            let ourDate = new Date()
+
+            //Change it so that it is  days in the past.
+            let pastDate = ourDate.getDate() - index
+
+            ourDate.setDate(pastDate)
+
+            const newPerformance = new Performance({
+              student: student._id,
+              bootcamp: bootcamp._id,
+              createdAt: ourDate,
+              online: ourDate
+            })
+            await newPerformance.save()
+          })
+        } else {
+          const newPerformance = new Performance({
+            student: student._id,
+            bootcamp: bootcamp._id
+          })
+          await newPerformance.save()
+        }
       }
     }
   }
@@ -199,7 +226,6 @@ io.on('connection', function (socket) {
 
   socket.on('disconnect', async function () {
     try {
-      console.log('disssss', users[socket.id])
       await User.findByIdAndUpdate(users[socket.id], {
         status: 'offline'
       })
