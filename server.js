@@ -178,6 +178,7 @@ const sessionRoutes = require('./routes/sessionRoutes')
 const appointmentRoutes = require('./routes/appointmentRoutes')
 const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes')
 const performanceRoutes = require('./routes/performanceRoutes')
+const mediaCenterRoutes = require('./routes/mediaCenterRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -195,6 +196,8 @@ app.use('/api/session', sessionRoutes)
 app.use('/api/appointment', appointmentRoutes)
 app.use('/api/serviceCategory', serviceCategoryRoutes)
 app.use('/api/performance', performanceRoutes)
+app.use('/api/mediaCenter', mediaCenterRoutes)
+
 
 const server = app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)

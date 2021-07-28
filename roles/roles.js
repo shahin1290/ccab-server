@@ -142,5 +142,11 @@ exports.roles = (() => {
     .createAny('serviceCategory')
     .deleteAny('serviceCategory')
     .updateAny('serviceCategory')
+
+     // mediaCenter
+     .readAny('mediaCenter')
+     .createAny('mediaCenter')
+     .deleteAny('mediaCenter')
+     .updateAny('mediaCenter')
   return ac
 })()
