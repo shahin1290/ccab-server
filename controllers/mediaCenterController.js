@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator')
 const MediaCenter = require('./../models/mediaCenterModel')
+const Bootcamp = require('./../models/bootcampModel')
 const Week = require('./../models/weekModel')
 const Day = require('./../models/dayModel')
 const Quiz = require('./../models/quizModel')
@@ -32,7 +33,7 @@ const createNewWeeks = async (updatedMediaCenter) => {
   for (let i = 1; i <= updatedMediaCenter.weeks; i++) {
     const newWeek = new Week({
       name: `week${i}`,
-      mediaCenter: updatedMediaCenter._id
+      bootcamp: updatedMediaCenter._id
     })
     await newWeek.save()
   }
@@ -44,7 +45,7 @@ const createNewDays = async (updatedMediaCenter) => {
     const dayArr = []
     const week = await Week.findOne({
       name: `week${i}`,
-      mediaCenter: updatedMediaCenter._id
+      bootcamp: updatedMediaCenter._id
     })
 
     for (let j = 1; j <= 5; j++) {
@@ -152,7 +153,6 @@ exports.newMediaCenter = async (req, res, next) => {
       return res.status(400).json({ success: false, message: errors[0].msg })
 
     const mediaCenters = await MediaCenter.find()
-    console.log(`mediaCenters ${mediaCenters.length} ${req.user._id}`)
 
     // default new MediaCenter
     const mediaCenter = new MediaCenter()
@@ -169,28 +169,13 @@ exports.newMediaCenter = async (req, res, next) => {
     //mediaCenter.created_at =
     const savedmediaCenter = await mediaCenter.save()
 
-    const updatedMediaCenter = await MediaCenter.findByIdAndUpdate(
-      savedmediaCenter._id,
-      {
-        end_date:
-          savedmediaCenter.start_date.getTime() +
-          1000 * 60 * 60 * 24 * 7 * savedmediaCenter.weeks
-      }
-    )
-
     //create weeks and days based on mediaCenter
-    await createNewWeeks(updatedMediaCenter)
-    await createNewDays(updatedMediaCenter)
+    await createNewWeeks(savedmediaCenter)
+    await createNewDays(savedmediaCenter)
 
     return res.status(201).json({
       success: true,
-      data: {
-        _id: updatedMediaCenter._id,
-        name: updatedMediaCenter.name,
-        created_at: mediaCenter.getDate(updatedMediaCenter.createdAt),
-        description: updatedMediaCenter.description,
-        account_id: updatedMediaCenter.account_id
-      }
+      data: savedmediaCenter
     })
   } catch (err) {
     console.log(err)
@@ -359,10 +344,13 @@ exports.updateMediaCenter = async function (req, res) {
             await Week.findByIdAndUpdate(week._id, { days: dayArr })
           }
         }
+      }
 
-        /* //create weeks and days based on mediaCenter
-        await createNewWeeks(updatedMediaCenter)
-        await createNewDays(updatedMediaCenter) */
+      //update all the courses of the mediaCenter
+      if (mediaCenter.courses && mediaCenter.courses.length > 0) {
+        mediaCenter.courses.forEach(async (course) => {
+          await Bootcamp.findByIdAndUpdate(course, update)
+        })
       }
     }
     return res.status(200).json({

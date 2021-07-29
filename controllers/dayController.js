@@ -251,7 +251,7 @@ exports.update = async (req, res) => {
     const { weekId, id } = req.params
 
     //check if the week exists
-    const week = await Week.findById(weekId).populate('bootcamp', 'mentor')
+    const week = await Week.findById(weekId)
     if (!week) {
       return res.status(404).json({
         success: false,
@@ -259,7 +259,7 @@ exports.update = async (req, res) => {
       })
     }
 
-    //check if is the mentor for the bootcamp
+    /* //check if is the mentor for the bootcamp
     if (
       (req.user.user_type === 'MentorUser' ||
         req.user.user_type === 'AdminUser') &&
@@ -269,7 +269,7 @@ exports.update = async (req, res) => {
         success: false,
         message: 'You are not allowed mentor for this bootcamp'
       })
-    }
+    } */
 
     //check if the day is in the week
     const day = await Day.findById(id)
@@ -364,8 +364,6 @@ exports.update = async (req, res) => {
     const updatedDay = await Day.findByIdAndUpdate(day._id, updatedObject, {
       new: true
     })
-
-    console.log(updatedDay)
 
     return res.status(200).json({
       success: true,

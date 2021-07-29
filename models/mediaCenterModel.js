@@ -33,10 +33,10 @@ const mediaCenterSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  students: [
+  courses: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'Bootcamp'
     }
   ],
 

@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator')
 const Bootcamp = require('./../models/bootcampModel')
+const MediaCenter = require('./../models/mediaCenterModel')
 const Week = require('./../models/weekModel')
 const Day = require('./../models/dayModel')
 const Quiz = require('./../models/quizModel')
@@ -39,7 +40,7 @@ const createNewWeeks = async (updatedBootcamp) => {
 }
 
 //********** createNewWeeks  ************
-const createNewDays = async (updatedBootcamp) => {
+const createNewDays = async (updatedBootcamp, mediaCenter) => {
   for (let i = 1; i <= updatedBootcamp.weeks; i++) {
     const dayArr = []
     const week = await Week.findOne({
@@ -47,16 +48,27 @@ const createNewDays = async (updatedBootcamp) => {
       bootcamp: updatedBootcamp._id
     })
 
-    for (let j = 1; j <= 5; j++) {
+    const centerWeek = await Week.findOne({
+      name: `week${i}`,
+      bootcamp: mediaCenter._id
+    })
+
+    const centerDays = await Day.find({ week: centerWeek._id })
+
+    centerDays.forEach(async (centerDay) => {
       const newDay = new Day({
-        name: `day${j}`,
+        name: centerDay.name,
         week: week._id,
-        video_path:
-          'https://player.vimeo.com/video/243885948?color=ffffff&title=0&byline=0&portrait=0'
+        video_path: centerDay.video_path,
+        show: centerDay.show,
+        arabic_video_path: centerDay.arabic_video_path,
+        sections: centerDay.sections
       })
       const savedDay = await newDay.save()
+
       dayArr.push(savedDay._id)
-    }
+    })
+
     await Week.findByIdAndUpdate(week._id, { days: dayArr })
   }
 }
@@ -151,24 +163,34 @@ exports.newBootcamp = async (req, res, next) => {
       //returning only first error allways
       return res.status(400).json({ success: false, message: errors[0].msg })
 
-    const bootcamps = await Bootcamp.find()
-    console.log(`bootcamps ${bootcamps.length} ${req.user._id}`)
+    const mediaCenter = await MediaCenter.findById(req.body.mediaCenter)
+
+    const {
+      name,
+      category,
+      description,
+      mentor,
+      price,
+      seats,
+      weeks,
+      img_path,
+      video_path
+    } = mediaCenter
 
     // default new bootcamp
     const bootcamp = new Bootcamp()
-    bootcamp.name = `bootcamp ${bootcamps.length + 1}`
-    bootcamp.category = 'Web Development'
-    bootcamp.description =
-      'The essence of this board is to provide a high-level overview of your bootcamp. This is the place to plan and track your progress. '
-    bootcamp.mentor = req.user._id
-    bootcamp.price = 1000
-    bootcamp.seats = 10
-    bootcamp.weeks = req.body.weeks
-    bootcamp.img_path = '/uplods/img.png'
-    bootcamp.video_path = 'https://www.youtube.com/watch?v=C0DPdy98e4c'
-    //bootcamp.created_at =
+    ;(bootcamp.name = name),
+      (bootcamp.category = category),
+      (bootcamp.description = description),
+      (bootcamp.price = price),
+      (bootcamp.seats = seats),
+      (bootcamp.weeks = weeks)
+    ;(bootcamp.img_path = img_path),
+      (bootcamp.video_path = video_path),
+      (bootcamp.mentor = mentor)
     const savedbootcamp = await bootcamp.save()
 
+    //update bootcamp's end date based on weeks
     const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
       savedbootcamp._id,
       {
@@ -180,7 +202,12 @@ exports.newBootcamp = async (req, res, next) => {
 
     //create weeks and days based on bootcamp
     await createNewWeeks(updatedBootcamp)
-    await createNewDays(updatedBootcamp)
+    await createNewDays(updatedBootcamp, mediaCenter)
+
+    //update media center courses array
+    await MediaCenter.findByIdAndUpdate(mediaCenter._id, {
+      courses: [...mediaCenter.courses, updatedBootcamp._id]
+    })
 
     return res.status(201).json({
       success: true,
@@ -314,7 +341,6 @@ exports.updateBootcamp = async function (req, res) {
         const weekNumberChanges = updatedBootcamp.weeks - bootcamp.weeks
 
         if (weekNumberChanges < 0) {
-
           for (let i = 0; i < weekNumberChanges * -1; i++) {
             const week = await Week.findOneAndDelete({
               name: `week${bootcamp.weeks - i}`
