@@ -29,6 +29,9 @@ exports.roles = (() => {
     //session
     .readAny('sessions')
 
+    //performance
+    .updateOwn('performance')
+
   // Viewer user
   ac.grant('ViewerUser').readAny('profile').readOwn('profile')
 
@@ -49,7 +52,7 @@ exports.roles = (() => {
     // service category
     .readAny('serviceCategories')
 
-    // service 
+    // service
     .updateOwn('service')
 
   // Accountant user

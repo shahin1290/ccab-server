@@ -316,6 +316,7 @@ exports.viewUserProfile = async (req, res) => {
 //@ ROUTE /api/users/profile
 
 exports.update = async (req, res) => {
+  console.log(req.body)
   const errors = getValidationResualt(req)
   if (errors)
     //returning only first error allways
@@ -329,7 +330,8 @@ exports.update = async (req, res) => {
       bio,
       skills,
       networkAddresses,
-      teachingFields
+      teachingFields,
+      status
     } = req.body
 
     //check if the name or the email is taken ...>
@@ -373,9 +375,10 @@ exports.update = async (req, res) => {
           phoneNumber,
           avatar: req.file.filename,
           bio,
-          skills: JSON.parse(skills),
-          networkAddresses: JSON.parse(networkAddresses),
-          teachingFields: JSON.parse(teachingFields)
+          skills: skills && JSON.parse(skills),
+          networkAddresses: networkAddresses && JSON.parse(networkAddresses),
+          teachingFields: teachingFields && JSON.parse(teachingFields),
+          status
         }
       )
     } else {
@@ -386,9 +389,10 @@ exports.update = async (req, res) => {
           email,
           phoneNumber,
           bio,
-          skills: JSON.parse(skills),
-          networkAddresses: JSON.parse(networkAddresses),
-          teachingFields: JSON.parse(teachingFields)
+          skills: skills && JSON.parse(skills),
+          networkAddresses: networkAddresses && JSON.parse(networkAddresses),
+          teachingFields: teachingFields && JSON.parse(teachingFields),
+          status
         }
       )
     }

@@ -321,7 +321,8 @@ exports.updateQuizAnswer = async function (req, res) {
         },
         {
           answers: req.body,
-          status: calculateResult(quiz, req.body)
+          status: calculateResult(quiz, req.body),
+          createdAt: new Date()
         }
       )
     }

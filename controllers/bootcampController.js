@@ -311,33 +311,64 @@ exports.updateBootcamp = async function (req, res) {
         // 2 delete the image_path upload files for the bootcamp
         // 3 delete video path and element_text image file uploads from day
 
-        const weeks = await Week.find({ bootcamp: bootcamp._id })
+        const weekNumberChanges = updatedBootcamp.weeks - bootcamp.weeks
 
-        await Week.deleteMany({ bootcamp: id })
+        if (weekNumberChanges < 0) {
 
-        weeks.forEach(async (week) => {
-          const days = await Day.find({ week: week._id })
+          for (let i = 0; i < weekNumberChanges * -1; i++) {
+            const week = await Week.findOneAndDelete({
+              name: `week${bootcamp.weeks - i}`
+            })
 
-          await Day.deleteMany({ week: week._id })
+            const days = await Day.find({ week: week._id })
 
-          days.forEach(async (day) => {
-            //fs.unlinkSync(day.video_path)
+            await Day.deleteMany({ week: week._id })
 
-            //check if day contains any image reference
-            const imageElemntArr = day.source_code.filter(
-              (item) => item.element_type === 'image'
-            )
+            days.forEach(async (day) => {
+              //fs.unlinkSync(day.video_path)
 
-            //remove image from public folder
-            if (imageElemntArr.length > 0) {
-              imageElemntArr.forEach((el) => fs.unlinkSync(el.element_text))
+              //check if day contains any image reference
+              const imageElemntArr = day.source_code.filter(
+                (item) => item.element_type === 'image'
+              )
+
+              //remove image from public folder
+              if (imageElemntArr.length > 0) {
+                imageElemntArr.forEach((el) => fs.unlinkSync(el.element_text))
+              }
+            })
+          }
+        }
+
+        if (weekNumberChanges > 0) {
+          for (let i = 1; i <= weekNumberChanges; i++) {
+            const week = new Week({
+              name: `week${bootcamp.weeks + i}`,
+              bootcamp: updatedBootcamp._id
+            })
+
+            await week.save()
+
+            const dayArr = []
+
+            for (let j = 1; j <= 5; j++) {
+              const newDay = new Day({
+                name: `day${j}`,
+                week: week._id,
+                video_path:
+                  'https://player.vimeo.com/video/243885948?color=ffffff&title=0&byline=0&portrait=0'
+              })
+              const savedDay = await newDay.save()
+              dayArr.push(savedDay._id)
             }
-          })
-        })
 
-        //create weeks and days based on bootcamp
+            await Week.findByIdAndUpdate(week._id, { days: dayArr })
+          }
+        }
+
+        /* //create weeks and days based on bootcamp
         await createNewWeeks(updatedBootcamp)
-        await createNewDays(updatedBootcamp)
+        await createNewDays(updatedBootcamp) */
       }
     }
     return res.status(200).json({

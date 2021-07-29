@@ -5,10 +5,14 @@ const morgan = require('morgan')
 const path = require('path')
 const { sendContactMail } = require('./util/contactMail')
 const app = express()
-var cors = require('cors')
+const cors = require('cors')
 const PORT = process.env.PORT || process.env.SERVER_PORT
 const myDb = require('./database/db')
 const axios = require('axios')
+const User = require('./models/userModel')
+const Bootcamp = require('./models/bootcampModel')
+const Performance = require('./models/performanceModel')
+const cron = require('node-cron')
 
 myDb()
 
@@ -40,7 +44,7 @@ app.post('/currency-convert', async (req, res, next) => {
   try {
     const { currency, country, fromCurrency } = req.body
 
-    const apiKey='6068a971e6754bdf9d3b0ddc706779b0'
+    const apiKey = '6068a971e6754bdf9d3b0ddc706779b0'
 
     const toCurrency = currency
     const query = fromCurrency + '_' + toCurrency
@@ -64,6 +68,54 @@ app.post('/currency-convert', async (req, res, next) => {
     return res.status(500).json({
       message: error
     })
+  }
+})
+
+// create new empty performance for bootcamp students every night(12am)
+cron.schedule('0 2 * * *', async () => {
+  const bootcamps = await Bootcamp.find()
+
+  for (bootcamp of bootcamps) {
+    const startDate = new Date(bootcamp.start_date).getTime()
+    const today = new Date().setHours(0, 0, 0, 0)
+
+    if (startDate <= today) {
+      const students = bootcamp.students
+      for (student of students) {
+        //create previous performances from the start date
+        const performances = await Performance.find({ student: student._id })
+
+        if (performances.length === 0) {
+          const differenceInDays = Math.ceil(
+            (today - startDate) / (1000 * 3600 * 24)
+          )
+
+          new Array(differenceInDays + 1).fill(0).forEach(async (el, index) => {
+            //Get today's date using the JavaScript Date object.
+            let ourDate = new Date()
+
+            //Change it so that it is  days in the past.
+            let pastDate = ourDate.getDate() - index
+
+            ourDate.setDate(pastDate)
+
+            const newPerformance = new Performance({
+              student: student._id,
+              bootcamp: bootcamp._id,
+              createdAt: ourDate,
+              online: ourDate
+            })
+            await newPerformance.save()
+          })
+        } else {
+          const newPerformance = new Performance({
+            student: student._id,
+            bootcamp: bootcamp._id
+          })
+          await newPerformance.save()
+        }
+      }
+    }
   }
 })
 
@@ -125,6 +177,7 @@ const serviceRoutes = require('./routes/serviceRoutes')
 const sessionRoutes = require('./routes/sessionRoutes')
 const appointmentRoutes = require('./routes/appointmentRoutes')
 const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes')
+const performanceRoutes = require('./routes/performanceRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -141,8 +194,78 @@ app.use('/api/service', serviceRoutes)
 app.use('/api/session', sessionRoutes)
 app.use('/api/appointment', appointmentRoutes)
 app.use('/api/serviceCategory', serviceCategoryRoutes)
+app.use('/api/performance', performanceRoutes)
 
-
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)
+})
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: '*'
+  }
+})
+
+const users = {}
+
+io.on('connection', function (socket) {
+  socket.on('login', async function (data, callback) {
+    // saving userId to object with socket ID
+    users[socket.id] = data.userId
+
+    await User.findByIdAndUpdate(data.userId, { status: 'online' })
+
+    callback()
+  })
+
+  socket.on('logout', async function (data) {
+    await User.findByIdAndUpdate(data.userId, {
+      status: 'offline'
+    })
+  })
+
+  socket.on('disconnect', async function () {
+    try {
+      await User.findByIdAndUpdate(users[socket.id], {
+        status: 'offline'
+      })
+
+      const start = new Date().setHours(0, 0, 0, 0)
+
+      const end = new Date().setHours(23, 59, 59, 999)
+
+      const performance = await Performance.findOne({
+        createdAt: { $gte: start, $lt: end },
+        student: users[socket.id]
+      })
+
+      const onlineTimeSpent =
+        performance.onlineTimeSpent +
+        Math.trunc(
+          (new Date().getTime() - new Date(performance.online).getTime()) / 1000
+        )
+
+      const update = {
+        onlineTimeSpent,
+
+        onlineScore:
+          onlineTimeSpent > 14400
+            ? 100
+            : Math.trunc((onlineTimeSpent * 100) / 14400)
+      }
+
+      const updatedPerformance = await Performance.findOneAndUpdate(
+        { createdAt: { $gte: start, $lt: end }, student: users[socket.id] },
+        update,
+        {
+          new: true
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
+
+    // remove saved socket from users object
+    delete users[socket.id]
+  })
 })
