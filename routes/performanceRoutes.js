@@ -4,11 +4,6 @@ const performanceController = require('../controllers/performanceController')
 const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 
 router
-  .route('/watching-lectures/:bootcampId')
-  // get all the watching-lectures
-  .get(AllowIfLogin, performanceController.watchingLectures)
-
-router
   .route('/daily-performance/:bootcampId')
   // specific performance details
   .get(AllowIfLogin, performanceController.performanceDetails)
@@ -16,6 +11,11 @@ router
   .put(AllowIfLogin, performanceController.updatePerformance)
   // delete a specific performance
   .delete(AllowIfLogin, performanceController.deletePerformance)
+
+router
+  .route('/watching-lectures/:bootcampId')
+  // get all the watching-lectures
+  .get(AllowIfLogin, performanceController.watchingLectures)
 
 router
   .route('/:bootcampId/:userId')

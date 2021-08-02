@@ -4,6 +4,7 @@ const User = require('../models/userModel')
 const Day = require('../models/dayModel')
 const Answer = require('../models/answerModel')
 const Bootcamp = require('../models/bootcampModel')
+const MediaCenter = require('../models/mediaCenterModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 
 const fs = require('fs')
@@ -102,7 +103,9 @@ exports.new = async (req, res) => {
     //check the bootcamp exists
     const bootcamp = await Bootcamp.findById(req.params.bootcampId)
 
-    if (!bootcamp) {
+    const mediaCenter = await MediaCenter.findById(req.params.bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -136,7 +139,7 @@ exports.new = async (req, res) => {
       projectName: AssignmentName,
       path: AssignmentFile.path,
       user: req.user._id,
-      bootcamp: bootcamp._id,
+      bootcamp: req.params.bootcampId,
       day: day._id
     })
     await task.save()
@@ -147,33 +150,35 @@ exports.new = async (req, res) => {
       projectName: AssignmentName,
       path: AssignmentFile.path,
       user: req.user._id,
-      bootcamp: bootcamp._id,
+      bootcamp: req.params.bootcampId,
       day: day._id
     })
 
-    //create empty answers for each student of this bootcamp for that quiz
-    for (student of bootcamp.students) {
-      const user = await User.findOne(student._id)
-      //craete the answers
-      const answer = new Answer({
-        user: user._id,
-        task: lastTask._id
-      })
+    if (bootcamp) {
+      //create empty answers for each student of this bootcamp for that quiz
+      for (student of bootcamp.students) {
+        const user = await User.findOne(student._id)
+        //craete the answers
+        const answer = new Answer({
+          user: user._id,
+          task: lastTask._id
+        })
 
-      await answer.save()
+        await answer.save()
 
-      //send email to the mentor (submited Answer) .............>
-      const toUser = { email: user.email, name: user.name }
-      const subjet =
-        'New Assignment:Was Created "' + task.projectName + '" Assignment'
-      const html = {
-        student: '',
-        text: 'We want to inform you that a new assignment has been added ',
-        assignment: ' ' + task.projectName + ' Assignment.<br>',
-        link: 'https://ccab.tech/assignment/' + task._id
+        //send email to the mentor (submited Answer) .............>
+        const toUser = { email: user.email, name: user.name }
+        const subjet =
+          'New Assignment:Was Created "' + task.projectName + '" Assignment'
+        const html = {
+          student: '',
+          text: 'We want to inform you that a new assignment has been added ',
+          assignment: ' ' + task.projectName + ' Assignment.<br>',
+          link: 'https://ccab.tech/assignment/' + task._id
+        }
+
+        var mailStatus = sendMail(res, toUser, subjet, html)
       }
-
-      var mailStatus = sendMail(res, toUser, subjet, html)
     }
 
     return res.status(201).json({ success: true, data: task })

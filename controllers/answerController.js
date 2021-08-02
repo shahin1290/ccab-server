@@ -243,7 +243,7 @@ exports.view = async (req, res) => {
 //@ ROUTE /api/answers/:id
 exports.viewOne = async (req, res) => {
   try {
-    const { id, bootcampId, taskId } = req.params
+    const {  bootcampId, taskId } = req.params
 
     const bootcamp = await Bootcamp.findById(bootcampId)
 
@@ -281,27 +281,12 @@ exports.viewOne = async (req, res) => {
       }
 
       answer = await Answer.findOne({
-        _id: id,
         task: task._id,
         user: req.user._id
       })
     }
 
-    //check if is the mentor for the bootcamp
-    if (req.user.user_type === 'MentorUser') {
-      if (!req.user._id.equals(bootcamp.mentor)) {
-        return res.status(404).json({
-          success: false,
-          message: 'You are not allowed mentor for this bootcamp'
-        })
-      }
-      answer = await answer.findOne({ _id: id, task: task._id })
-    }
-
-    //check if is the admin
-    if (req.user.user_type === 'AdminUser') {
-      answer = await Answer.findOne({ _id: id, task: task._id })
-    }
+    
 
     if (!answer) {
       return res

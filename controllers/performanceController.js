@@ -152,6 +152,7 @@ exports.performanceDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updatePerformance = async function (req, res) {
   try {
+    console.log('quizId', req.body.quizId);
     const { dayId, taskId, quizId, connected, taskResult, student } = req.body
 
     const day = await Day.findById(dayId)
@@ -195,11 +196,11 @@ exports.updatePerformance = async function (req, res) {
     if (taskResult) {
       let resultScore
 
-      if (taskResult === 'Failed') resultScore = 30
+      if (taskResult === 'Failed') resultScore = 0
 
-      if (taskResult === 'Not Bad') resultScore = 65
+      if (taskResult === 'Not Bad') resultScore = 50
 
-      if (taskResult === 'Good') resultScore = 85
+      if (taskResult === 'Good') resultScore = 75
 
       if (taskResult === 'Excellent') resultScore = 100
 
@@ -284,13 +285,13 @@ exports.updatePerformance = async function (req, res) {
         score = 0
       }
 
-      let resultScore
+      let resultScore   
 
-      if (quizAnswer.status === 'Failed') resultScore = 30
+      if (quizAnswer.status === 'Failed') resultScore = 0
 
-      if (quizAnswer.status === 'Not Bad') resultScore = 65
+      if (quizAnswer.status === 'Not Bad') resultScore = 50
 
-      if (quizAnswer.status === 'Good') resultScore = 85
+      if (quizAnswer.status === 'Good') resultScore = 75
 
       if (quizAnswer.status === 'Excellent') resultScore = 100
 
