@@ -22,28 +22,32 @@ exports.getWeeks = async (req, res) => {
 
     const bootcamp = await Bootcamp.findById(bootcampId)
 
-    const start_date = bootcamp.start_date
-    const current_date = new Date()
 
-    const timePeriod = []
+    //update show true if the bootcamp start date comes
+    if (bootcamp) {
+      const start_date = bootcamp.start_date
+      const current_date = new Date()
 
-    for (let i = 0; i <= bootcamp.weeks; i++) {
-      timePeriod.push(start_date.getTime() + 1000 * 60 * 60 * 24 * 7 * [i])
-    }
+      const timePeriod = []
 
-    timePeriod.map(async (item, index) => {
-      if (current_date.getTime() > item) {
-        await Week.findOneAndUpdate(
-          { bootcamp, name: `week${index + 1}` },
-          { show: true }
-        )
+      for (let i = 0; i <= bootcamp.weeks; i++) {
+        timePeriod.push(start_date.getTime() + 1000 * 60 * 60 * 24 * 7 * [i])
       }
-    })
+
+      timePeriod.map(async (item, index) => {
+        if (current_date.getTime() > item) {
+          await Week.findOneAndUpdate(
+            { bootcamp, name: `week${index + 1}` },
+            { show: true }
+          )
+        }
+      })
+    }
 
     //find the weeks for the specific bootcamp
     let weeks = await Week.find({ bootcamp: bootcampId })
       .populate('bootcamp')
-      .populate({path: 'days', model: 'Day'})
+      .populate({ path: 'days', model: 'Day' })
 
     //check if the student is enrolled in the bootcamp
     if (req.user.user_type === 'StudentUser') {
@@ -51,7 +55,7 @@ exports.getWeeks = async (req, res) => {
 
       weeks = await Week.find({ bootcamp: bootcampId, show: true })
         .populate('bootcamp')
-        .populate({path: 'days', model: 'Day'})
+        .populate({ path: 'days', model: 'Day' })
 
       if (!isValidStudent && weeks[0].bootcamp.price > 0) {
         return res.status(404).json({

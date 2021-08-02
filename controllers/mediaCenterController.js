@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator')
-const Bootcamp = require('./../models/bootcampModel')
 const MediaCenter = require('./../models/mediaCenterModel')
+const Bootcamp = require('./../models/bootcampModel')
 const Week = require('./../models/weekModel')
 const Day = require('./../models/dayModel')
 const Quiz = require('./../models/quizModel')
@@ -20,55 +20,44 @@ function getValidationResualt(req) {
 }
 
 //********** is Name exist ************
-const isNameExist = async (bootcampName) => {
-  const bootcamp = await Bootcamp.find({ name: bootcampName })
-  if (bootcamp.length) {
+const isNameExist = async (mediaCenterName) => {
+  const mediaCenter = await MediaCenter.find({ name: mediaCenterName })
+  if (mediaCenter.length) {
     return true
   }
   return false
 }
 
 //********** createNewWeeks  ************
-const createNewWeeks = async (updatedBootcamp) => {
-  for (let i = 1; i <= updatedBootcamp.weeks; i++) {
+const createNewWeeks = async (updatedMediaCenter) => {
+  for (let i = 1; i <= updatedMediaCenter.weeks; i++) {
     const newWeek = new Week({
       name: `week${i}`,
-      bootcamp: updatedBootcamp._id
+      bootcamp: updatedMediaCenter._id
     })
     await newWeek.save()
   }
 }
 
 //********** createNewWeeks  ************
-const createNewDays = async (updatedBootcamp, mediaCenter) => {
-  for (let i = 1; i <= updatedBootcamp.weeks; i++) {
+const createNewDays = async (updatedMediaCenter) => {
+  for (let i = 1; i <= updatedMediaCenter.weeks; i++) {
     const dayArr = []
     const week = await Week.findOne({
       name: `week${i}`,
-      bootcamp: updatedBootcamp._id
+      bootcamp: updatedMediaCenter._id
     })
 
-    const centerWeek = await Week.findOne({
-      name: `week${i}`,
-      bootcamp: mediaCenter._id
-    })
-
-    const centerDays = await Day.find({ week: centerWeek._id })
-
-    centerDays.forEach(async (centerDay) => {
+    for (let j = 1; j <= 5; j++) {
       const newDay = new Day({
-        name: centerDay.name,
+        name: `day${j}`,
         week: week._id,
-        video_path: centerDay.video_path,
-        show: centerDay.show,
-        arabic_video_path: centerDay.arabic_video_path,
-        sections: centerDay.sections
+        video_path:
+          'https://player.vimeo.com/video/243885948?color=ffffff&title=0&byline=0&portrait=0'
       })
       const savedDay = await newDay.save()
-
       dayArr.push(savedDay._id)
-    })
-
+    }
     await Week.findByIdAndUpdate(week._id, { days: dayArr })
   }
 }
@@ -76,40 +65,40 @@ const createNewDays = async (updatedBootcamp, mediaCenter) => {
 //********** Functions End************************************
 
 //********** default route ************
-//@des Get all bootcamps for specific account
-//@route Get api/v2/bootcamps
+//@des Get all mediaCenters for specific account
+//@route Get api/v2/mediaCenters
 //@accesss private (allow for all users)
 
-exports.getAllBootcamps = async (req, res, next) => {
+exports.getAllMediaCenters = async (req, res, next) => {
   try {
     const pageSize = 6
     const page = Number(req.query.pageNumber) || 1
-    const count = await Bootcamp.countDocuments()
-    var bootcamps
+    const count = await MediaCenter.countDocuments()
+    var mediaCenters
     //console.log(req.user);
 
     console.log('normal user  request')
     if (req.query.pageNumber) {
-      bootcamps = await Bootcamp.find({ published: true })
+      mediaCenters = await MediaCenter.find({ published: true })
         .limit(pageSize)
         .skip(pageSize * (page - 1))
         .populate('mentor', 'name _id')
         .populate('students')
     } else {
-      bootcamps = await Bootcamp.find({ published: true })
+      mediaCenters = await MediaCenter.find({ published: true })
         .populate('mentor', 'name _id')
         .populate('students')
     }
 
-    if (!bootcamps.length)
+    if (!mediaCenters.length)
       return res
         .status(404)
         .json({ success: false, message: 'There is No Data Found' })
 
     return res.status(200).json({
       success: true,
-      count: bootcamps.length,
-      data: { bootcamps, page, pages: Math.ceil(count / pageSize) }
+      count: mediaCenters.length,
+      data: { mediaCenters, page, pages: Math.ceil(count / pageSize) }
     })
   } catch (err) {
     return res
@@ -118,32 +107,32 @@ exports.getAllBootcamps = async (req, res, next) => {
   }
 }
 
-//@des Get all bootcamps as admin
-//@route Get api/v2/bootcamps/mange
+//@des Get all mediaCenters as admin
+//@route Get api/v2/mediaCenters/mange
 //@accesss private (allow for all users)
-exports.MangeBootcamp = async (req, res, next) => {
+exports.mangeMediaCenter = async (req, res, next) => {
   try {
     const pageSize = 10
     const page = Number(req.query.pageNumber) || 1
-    const count = await Bootcamp.countDocuments()
-    var bootcamps
+    const count = await MediaCenter.countDocuments()
+    var mediaCenters
     //console.log(req.user);
 
     console.log('Admin user  request')
-    bootcamps = await Bootcamp.find()
+    mediaCenters = await MediaCenter.find()
       .limit(pageSize)
       .skip(pageSize * (page - 1))
       .populate('mentor', 'name _id')
 
-    if (!bootcamps.length)
+    if (!mediaCenters.length)
       return res
         .status(404)
         .json({ success: false, message: 'There is No Data Found' })
 
     return res.status(200).json({
       success: true,
-      count: bootcamps.length,
-      data: { bootcamps, page, pages: Math.ceil(count / pageSize) }
+      count: mediaCenters.length,
+      data: { mediaCenters, page, pages: Math.ceil(count / pageSize) }
     })
   } catch (err) {
     console.log(err)
@@ -153,71 +142,40 @@ exports.MangeBootcamp = async (req, res, next) => {
   }
 }
 
-//@des POST new bootcamp for specific account
-//@route POST api/v2/bootcamps
+//@des POST new MediaCenter for specific account
+//@route POST api/v2/mediaCenters
 //@accesss private (allow for all users)
-exports.newBootcamp = async (req, res, next) => {
+exports.newMediaCenter = async (req, res, next) => {
   try {
     const errors = getValidationResualt(req)
     if (errors.length)
       //returning only first error allways
       return res.status(400).json({ success: false, message: errors[0].msg })
 
-    const mediaCenter = await MediaCenter.findById(req.body.mediaCenter)
+    const mediaCenters = await MediaCenter.find()
 
-    const {
-      name,
-      category,
-      description,
-      mentor,
-      price,
-      seats,
-      weeks,
-      img_path,
-      video_path
-    } = mediaCenter
+    // default new MediaCenter
+    const mediaCenter = new MediaCenter()
+    mediaCenter.name = `mediaCenter ${mediaCenters.length + 1}`
+    mediaCenter.category = 'Web Development'
+    mediaCenter.description =
+      'The essence of this board is to provide a high-level overview of your mediaCenter. This is the place to plan and track your progress. '
+    mediaCenter.mentor = req.user._id
+    mediaCenter.price = 1000
+    mediaCenter.seats = 10
+    mediaCenter.weeks = req.body.weeks
+    mediaCenter.img_path = '/uplods/img.png'
+    mediaCenter.video_path = 'https://www.youtube.com/watch?v=C0DPdy98e4c'
+    //mediaCenter.created_at =
+    const savedmediaCenter = await mediaCenter.save()
 
-    // default new bootcamp
-    const bootcamp = new Bootcamp()
-    ;(bootcamp.name = name),
-      (bootcamp.category = category),
-      (bootcamp.description = description),
-      (bootcamp.price = price),
-      (bootcamp.seats = seats),
-      (bootcamp.weeks = weeks)
-    ;(bootcamp.img_path = img_path),
-      (bootcamp.video_path = video_path),
-      (bootcamp.mentor = mentor)
-    const savedbootcamp = await bootcamp.save()
-
-    //update bootcamp's end date based on weeks
-    const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
-      savedbootcamp._id,
-      {
-        end_date:
-          savedbootcamp.start_date.getTime() +
-          1000 * 60 * 60 * 24 * 7 * savedbootcamp.weeks
-      }
-    )
-
-    //create weeks and days based on bootcamp
-    await createNewWeeks(updatedBootcamp)
-    await createNewDays(updatedBootcamp, mediaCenter)
-
-    //update media center courses array
-    await MediaCenter.findByIdAndUpdate(mediaCenter._id, {
-      courses: [...mediaCenter.courses, updatedBootcamp._id]
-    })
+    //create weeks and days based on mediaCenter
+    await createNewWeeks(savedmediaCenter)
+    await createNewDays(savedmediaCenter)
 
     return res.status(201).json({
       success: true,
-      data: {
-        _id: updatedBootcamp._id,
-        name: updatedBootcamp.name,
-        created_at: Bootcamp.getDate(updatedBootcamp.createdAt),
-        description: updatedBootcamp.description,
-        account_id: updatedBootcamp.account_id
-      }
+      data: savedmediaCenter
     })
   } catch (err) {
     console.log(err)
@@ -227,27 +185,27 @@ exports.newBootcamp = async (req, res, next) => {
   }
 }
 
-//@des GET single bootcamp for specific account
-//@route GET api/bootcamp/:id
+//@des GET single mediaCenter for specific account
+//@route GET api/mediaCenter/:id
 //@accesss private (allow for Admin)
-exports.bootcampDetails = async (req, res) => {
+exports.mediaCenterDetails = async (req, res) => {
   try {
     const id = req.params.id
-    const bootcamp = await Bootcamp.findOne({
+    const mediaCenter = await MediaCenter.findOne({
       _id: id
     })
       .populate('mentor', 'name _id')
       .populate('students')
 
-    if (!bootcamp) {
+    if (!mediaCenter) {
       return res
         .status(404)
-        .json({ success: false, message: 'bootcamp is not found' })
+        .json({ success: false, message: 'mediaCenter is not found' })
     }
 
     return res.status(200).json({
       success: true,
-      data: bootcamp
+      data: mediaCenter
     })
   } catch (err) {
     return res
@@ -256,10 +214,10 @@ exports.bootcampDetails = async (req, res) => {
   }
 }
 
-//@des PUT Update single bootcamp for specific account
-//@route PUT api/v2/bootcamp/:id
+//@des PUT Update single mediaCenter for specific account
+//@route PUT api/v2/mediaCenter/:id
 //@accesss private (allow for Admin)
-exports.updateBootcamp = async function (req, res) {
+exports.updateMediaCenter = async function (req, res) {
   try {
     const errors = getValidationResualt(req)
     if (errors.length)
@@ -267,7 +225,7 @@ exports.updateBootcamp = async function (req, res) {
       return res.status(400).json({ success: false, message: errors[0].msg })
 
     const id = req.params.id
-    const bootcamp = await Bootcamp.findById(id)
+    const mediaCenter = await MediaCenter.findById(id)
 
     let update = req.body
 
@@ -276,9 +234,9 @@ exports.updateBootcamp = async function (req, res) {
 
       //if new student is added, create all previous quiz and task answers
       const newStudetArray = JSON.parse(req.body.students).filter(
-        (x) => bootcamp.students.indexOf(x) === -1
+        (x) => mediaCenter.students.indexOf(x) === -1
       )
-      const Quizzess = await Quiz.find({ bootcamp })
+      const Quizzess = await Quiz.find({ mediaCenter })
 
       if (Quizzess.length > 0) {
         for (student of newStudetArray) {
@@ -294,7 +252,7 @@ exports.updateBootcamp = async function (req, res) {
         }
       }
 
-      const tasks = await Task.find({ bootcamp })
+      const tasks = await Task.find({ mediaCenter })
 
       if (tasks.length > 0) {
         for (student of newStudetArray) {
@@ -319,7 +277,7 @@ exports.updateBootcamp = async function (req, res) {
       update = { ...update, img_path: req.file.filename }
     }
 
-    const updatedBootcamp = await Bootcamp.findOneAndUpdate(
+    const updatedMediaCenter = await MediaCenter.findOneAndUpdate(
       { _id: id },
       update,
       {
@@ -327,23 +285,18 @@ exports.updateBootcamp = async function (req, res) {
       }
     )
 
-    if (updatedBootcamp) {
-      await Bootcamp.findByIdAndUpdate(updatedBootcamp._id, {
-        end_date:
-          updatedBootcamp.start_date.getTime() +
-          1000 * 60 * 60 * 24 * 7 * updatedBootcamp.weeks
-      })
-      if (updatedBootcamp.weeks !== bootcamp.weeks) {
-        // 1 delete week and day content for that bootcamp
-        // 2 delete the image_path upload files for the bootcamp
+    if (updatedMediaCenter) {
+      if (updatedMediaCenter.weeks !== mediaCenter.weeks) {
+        // 1 delete week and day content for that mediaCenter
+        // 2 delete the image_path upload files for the mediaCenter
         // 3 delete video path and element_text image file uploads from day
 
-        const weekNumberChanges = updatedBootcamp.weeks - bootcamp.weeks
+        const weekNumberChanges = updatedMediaCenter.weeks - mediaCenter.weeks
 
         if (weekNumberChanges < 0) {
           for (let i = 0; i < weekNumberChanges * -1; i++) {
             const week = await Week.findOneAndDelete({
-              name: `week${bootcamp.weeks - i}`
+              name: `week${mediaCenter.weeks - i}`
             })
 
             const days = await Day.find({ week: week._id })
@@ -369,8 +322,8 @@ exports.updateBootcamp = async function (req, res) {
         if (weekNumberChanges > 0) {
           for (let i = 1; i <= weekNumberChanges; i++) {
             const week = new Week({
-              name: `week${bootcamp.weeks + i}`,
-              bootcamp: updatedBootcamp._id
+              name: `week${mediaCenter.weeks + i}`,
+              mediaCenter: updatedMediaCenter._id
             })
 
             await week.save()
@@ -391,15 +344,18 @@ exports.updateBootcamp = async function (req, res) {
             await Week.findByIdAndUpdate(week._id, { days: dayArr })
           }
         }
+      }
 
-        /* //create weeks and days based on bootcamp
-        await createNewWeeks(updatedBootcamp)
-        await createNewDays(updatedBootcamp) */
+      //update all the courses of the mediaCenter
+      if (mediaCenter.courses && mediaCenter.courses.length > 0) {
+        mediaCenter.courses.forEach(async (course) => {
+          await Bootcamp.findByIdAndUpdate(course, update)
+        })
       }
     }
     return res.status(200).json({
       success: true,
-      data: updatedBootcamp
+      data: updatedMediaCenter
     })
   } catch (err) {
     return res
@@ -408,28 +364,28 @@ exports.updateBootcamp = async function (req, res) {
   }
 }
 
-//@des DELETE single bootcamp for specific account
-//@route DELETE api/v2/bootcamp/:id
+//@des DELETE single mediaCenter for specific account
+//@route DELETE api/v2/mediaCenter/:id
 //@accesss private (allow for Admin)
-exports.deleteBootcamp = async function (req, res) {
+exports.deleteMediaCenter = async function (req, res) {
   try {
     const { id } = req.params
-    const bootcamp = await Bootcamp.findById(id)
+    const mediaCenter = await MediaCenter.findById(id)
 
-    if (!bootcamp)
+    if (!mediaCenter)
       return res.status(404).json({
-        message: "bootcamp doesn't  Exist In "
+        message: "mediaCenter doesn't  Exist In "
       })
 
-    await bootcamp.deleteOne()
+    await MediaCenter.deleteOne()
 
-    // 1 delete week and day content for that bootcamp
-    // 2 delete the image_path upload files for the bootcamp
+    // 1 delete week and day content for that mediaCenter
+    // 2 delete the image_path upload files for the mediaCenter
     // 3 delete video path and element_text image file uploads from day
 
-    const weeks = await Week.find({ bootcamp: id })
+    const weeks = await Week.find({ mediaCenter: id })
 
-    await Week.deleteMany({ bootcamp: id })
+    await Week.deleteMany({ mediaCenter: id })
 
     weeks.forEach(async (week) => {
       const days = await Day.find({ week: week._id })
@@ -458,7 +414,7 @@ exports.deleteBootcamp = async function (req, res) {
 
     return res.status(200).json({
       data: null,
-      message: 'bootcamp hase been deleted',
+      message: 'mediaCenter hase been deleted',
       success: true
     })
   } catch (err) {
