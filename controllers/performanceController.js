@@ -3,10 +3,11 @@ const Day = require('../models/dayModel')
 const Bootcamp = require('../models/bootcampModel')
 const Quiz = require('../models/quizModel')
 const Task = require('../models/taskModel')
-const Answer = require('../models/answerModel')
+const User = require('../models/userModel')
 const QuizAnswer = require('../models/quizAnswerModel')
 
 //********** default route ************
+
 //@des Get all Performance for specific account
 //@route Get api/v2/Performance
 //@accesss private (allow for all users)
@@ -15,12 +16,22 @@ exports.getAllPerformances = async (req, res, next) => {
   try {
     let performances
 
+    console.log('ddd', req.params.userId)
+
+    const user = await User.findById(req.params.userId)
+
     if (req.user.user_type === 'AdminUser') {
-      performances = await Performance.find()
+      performances = await Performance.find({
+        student: user._id,
+        bootcamp: req.params.bootcampId
+      })
     }
 
     if (req.user.user_type === 'StudentUser') {
-      performances = await Performance.find({ student: req.user._id })
+      performances = await Performance.find({
+        student: user._id,
+        bootcamp: req.params.bootcampId
+      })
         .sort({ createdAt: 'asc' })
         .populate('student', 'name _id')
     }
@@ -41,21 +52,44 @@ exports.getAllPerformances = async (req, res, next) => {
   }
 }
 
-//@des Get all Performance as admin
-//@route Get api/v2/Performance/mange
+//@des Get all Watching Lectures as student
+//@route Get api/performance/watching-lectures
 //@accesss private (allow for all users)
-exports.managePerformance = async (req, res, next) => {
+exports.watchingLectures = async (req, res, next) => {
   try {
-    const Performance = await Performance.find()
+    const performances = await Performance.find({
+      bootcamp: req.params.bootcampId,
+      student: req.user._id
+    })
 
-    if (!Performance.length)
+    if (!performances.length)
       return res
         .status(404)
         .json({ success: false, message: 'There is No Data Found' })
 
+    //find all the watching lectures for the bootcamp
+
+    let watchingLectures = []
+
+    performances.forEach((performance) => {
+      return (watchingLectures = [
+        ...watchingLectures,
+        ...performance.watchingLectures
+      ])
+    })
+
+    const filteredArray = watchingLectures.filter(function (item, pos) {
+      return watchingLectures.indexOf(item) == pos
+    })
+
+    if (!watchingLectures.length)
+      return res
+        .status(404)
+        .json({ success: false, message: 'No lectures are watched yet ' })
+
     return res.status(200).json({
       success: true,
-      count: Performance.length
+      data: [...new Set(watchingLectures)]
     })
   } catch (err) {
     return res
@@ -118,15 +152,7 @@ exports.performanceDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updatePerformance = async function (req, res) {
   try {
-    const {
-      dayId,
-      bootcampId,
-      taskId,
-      quizId,
-      connected,
-      taskResult,
-      student
-    } = req.body
+    const { dayId, taskId, quizId, connected, taskResult, student } = req.body
 
     const day = await Day.findById(dayId)
 
@@ -136,10 +162,11 @@ exports.updatePerformance = async function (req, res) {
 
     const performance = await Performance.findOne({
       createdAt: { $gte: start, $lt: end },
-      student: req.user._id
+      student: req.user._id,
+      bootcamp: req.params.bootcampId
     })
 
-    const course = await Bootcamp.findById(bootcampId)
+    const course = await Bootcamp.findById(req.params.bootcampId)
 
     let update
 
@@ -149,12 +176,9 @@ exports.updatePerformance = async function (req, res) {
       }
     }
 
-    if (dayId && bootcampId) {
+    if (dayId) {
       update = {
-        watchingLectures: [
-          ...performance.watchingLectures,
-          { lecture: day._id, course: course._id }
-        ],
+        watchingLectures: [...performance.watchingLectures, day._id],
         watchingLectureScore: 100
       }
     }
@@ -277,7 +301,11 @@ exports.updatePerformance = async function (req, res) {
       }
     }
     const updatedPerformance = await Performance.findOneAndUpdate(
-      { createdAt: { $gte: start, $lt: end }, student: req.user._id },
+      {
+        createdAt: { $gte: start, $lt: end },
+        student: req.user._id,
+        bootcamp: course._id
+      },
       update,
       {
         new: true

@@ -15,12 +15,7 @@ const get_date = (date) => {
 }
 
 const performanceSchema = new mongoose.Schema({
-  watchingLectures: [
-    {
-      lecture: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
-      course: { type: mongoose.Schema.Types.ObjectId, ref: 'Bootcamp' }
-    }
-  ],
+  watchingLectures: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Day' }],
 
   watchingLectureScore: { type: Number, default: 0 },
 
