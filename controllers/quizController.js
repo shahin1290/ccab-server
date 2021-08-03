@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator')
 const Quiz = require('../models/quizModel')
 const QuizAnswer = require('../models/quizAnswerModel')
 const Bootcamp = require('../models/bootcampModel')
+const MediaCenter = require('../models/mediaCenterModel')
 const User = require('../models/userModel')
 const Day = require('../models/dayModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
@@ -36,16 +37,19 @@ const isNameExist = async (quizName) => {
 
 exports.getAllQuizzes = async (req, res, next) => {
   try {
-    //check the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const { bootcampId } = req.params
 
-    if (!bootcamp) {
+    //check the bootcamp exists
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
       })
     }
-
     let quizzes
 
     //check if the student is enrolled in the bootcamp
@@ -60,7 +64,7 @@ exports.getAllQuizzes = async (req, res, next) => {
       }
 
       quizzes = await Quiz.find(
-        { bootcamp: bootcamp._id },
+        { bootcamp: bootcampId },
         'name description question.content'
       )
     }
@@ -73,12 +77,12 @@ exports.getAllQuizzes = async (req, res, next) => {
           message: 'You are not allowed mentor for this bootcamp'
         })
       }
-      quizzes = await Quiz.find({ bootcamp: bootcamp._id })
+      quizzes = await Quiz.find({ bootcamp: bootcampId })
     }
 
     //check if is the mentor for the bootcamp
     if (req.user.user_type === 'AdminUser') {
-      quizzes = await Quiz.find({ bootcamp: bootcamp._id })
+      quizzes = await Quiz.find({ bootcamp: bootcampId })
     }
 
     if (quizzes.length === 0) {
@@ -108,10 +112,14 @@ exports.newQuiz = async (req, res, next) => {
     return res.status(400).json({ success: false, message: errors[0].msg })
 
   try {
-    //check the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const { bootcampId } = req.params
 
-    if (!bootcamp) {
+    //check the bootcamp exists
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -146,7 +154,7 @@ exports.newQuiz = async (req, res, next) => {
       question,
       time,
       user: req.user._id,
-      bootcamp: bootcamp._id,
+      bootcamp: bootcampId,
       day: day._id
     })
 
@@ -158,32 +166,34 @@ exports.newQuiz = async (req, res, next) => {
       description,
       time,
       user: req.user._id,
-      bootcamp: bootcamp._id,
+      bootcamp: bootcampId,
       day: day._id
     })
 
-    //create empty answers for each student of this bootcamp for that quiz
-    for (student of bootcamp.students) {
-      const user = await User.findOne(student._id)
-      //craete the answers
-      const quizAnswer = new QuizAnswer({
-        user: user._id,
-        quiz: savedQuiz._id
-      })
+    if (bootcamp) {
+      //create empty answers for each student of this bootcamp for that quiz
+      for (student of bootcamp.students) {
+        const user = await User.findOne(student._id)
+        //craete the answers
+        const quizAnswer = new QuizAnswer({
+          user: user._id,
+          quiz: savedQuiz._id
+        })
 
-      await quizAnswer.save()
+        await quizAnswer.save()
 
-      //send email to the mentor (submited Answer) .............>
-      const toUser = { email: user.email, name: user.name }
-      const subjet = 'New Quiz:Was Created "' + savedQuiz.name + '" Quiz'
-      const html = {
-        student: '',
-        text: 'We want to inform you that a new quiz has been added ',
-        assignment: ' ' + savedQuiz.name + ' Quiz.<br>',
-        link: 'https://ccab.tech/quiz/' + savedQuiz._id
+        //send email to the mentor (submited Answer) .............>
+        const toUser = { email: user.email, name: user.name }
+        const subjet = 'New Quiz:Was Created "' + savedQuiz.name + '" Quiz'
+        const html = {
+          student: '',
+          text: 'We want to inform you that a new quiz has been added ',
+          assignment: ' ' + savedQuiz.name + ' Quiz.<br>',
+          link: 'https://ccab.tech/quiz/' + savedQuiz._id
+        }
+
+        var mailStatus = sendMail(res, toUser, subjet, html)
       }
-
-      var mailStatus = sendMail(res, toUser, subjet, html)
     }
 
     return res.status(201).json({ success: true, data: savedQuiz })
@@ -200,10 +210,14 @@ exports.newQuiz = async (req, res, next) => {
 //@accesss private (allow for Admin, mentor, student)
 exports.quizDetails = async (req, res) => {
   try {
-    //check the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const { bootcampId } = req.params
 
-    if (!bootcamp) {
+    //check the bootcamp exists
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -246,7 +260,7 @@ exports.quizDetails = async (req, res) => {
     const quiz = await Quiz.findOne(
       {
         _id: req.params.id,
-        bootcamp: bootcamp._id,
+        bootcamp: bootcampId,
         day: day._id
       },
       'createdAt name description time question.content question.answers'
@@ -273,10 +287,14 @@ exports.quizDetails = async (req, res) => {
 //@accesss private (allow for Admin, mentor)
 exports.updateQuiz = async function (req, res) {
   try {
-    //check if the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const { bootcampId } = req.params
 
-    if (!bootcamp) {
+    //check the bootcamp exists
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -298,7 +316,7 @@ exports.updateQuiz = async function (req, res) {
       {
         _id: req.params.id,
         user: req.user._id,
-        bootcamp: bootcamp._id
+        bootcamp: bootcampId
       },
       req.body,
       {
@@ -322,9 +340,14 @@ exports.updateQuiz = async function (req, res) {
 //@accesss private (allow for Admin, mentor)
 exports.deleteQuiz = async function (req, res) {
   try {
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const { bootcampId } = req.params
 
-    if (!bootcamp) {
+    //check the bootcamp exists
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -355,7 +378,7 @@ exports.deleteQuiz = async function (req, res) {
     const quiz = await Quiz.findOne({
       _id: req.params.id,
       user: req.user._id,
-      bootcamp: bootcamp._id,
+      bootcamp: bootcampId,
       day: day._id
     })
 

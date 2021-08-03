@@ -15,10 +15,13 @@ const { sendMail } = require('../middleware/sendMail')
 
 exports.getTasks = async (req, res) => {
   try {
+    const { bootcampId } = req.params
     //check the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const bootcamp = await Bootcamp.findById(bootcampId)
 
-    if (!bootcamp) {
+    const mediaCenter = await MediaCenter.findById(bootcampId)
+
+    if (!bootcamp && !mediaCenter) {
       return res.status(404).json({
         success: false,
         message: 'No Bootcamp found!'
@@ -38,7 +41,7 @@ exports.getTasks = async (req, res) => {
         })
       }
 
-      tasks = await Task.find({ bootcamp: bootcamp._id }).populate('user name')
+      tasks = await Task.find({ bootcamp: bootcampId }).populate('user name')
     }
 
     //check if is the mentor for the bootcamp
@@ -49,12 +52,12 @@ exports.getTasks = async (req, res) => {
           message: 'You are not allowed mentor for this bootcamp'
         })
       }
-      tasks = await Task.find({ bootcamp: bootcamp._id }).populate('user name')
+      tasks = await Task.find({ bootcamp: bootcampId }).populate('user name')
     }
 
     //check if is the mentor for the bootcamp
     if (req.user.user_type === 'AdminUser') {
-      tasks = await Task.find({ bootcamp: bootcamp._id }).populate('user name')
+      tasks = await Task.find({ bootcamp: bootcampId }).populate('user name')
     }
 
     if (tasks.length === 0) {

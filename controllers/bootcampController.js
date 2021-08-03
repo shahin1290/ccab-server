@@ -179,15 +179,17 @@ exports.newBootcamp = async (req, res, next) => {
 
     // default new bootcamp
     const bootcamp = new Bootcamp()
-    ;(bootcamp.name = name),
-      (bootcamp.category = category),
-      (bootcamp.description = description),
-      (bootcamp.price = price),
-      (bootcamp.seats = seats),
-      (bootcamp.weeks = weeks)
-    ;(bootcamp.img_path = img_path),
-      (bootcamp.video_path = video_path),
-      (bootcamp.mentor = mentor)
+
+    bootcamp.name = name
+    bootcamp.category = category
+    bootcamp.description = description
+    bootcamp.price = price
+    bootcamp.seats = seats
+    bootcamp.weeks = weeks
+    bootcamp.img_path = img_path
+    bootcamp.video_path = video_path
+    bootcamp.mentor = mentor
+
     const savedbootcamp = await bootcamp.save()
 
     //update bootcamp's end date based on weeks
@@ -205,9 +207,73 @@ exports.newBootcamp = async (req, res, next) => {
     await createNewDays(updatedBootcamp, mediaCenter)
 
     //update media center courses array
-    await MediaCenter.findByIdAndUpdate(mediaCenter._id, {
-      courses: [...mediaCenter.courses, updatedBootcamp._id]
-    })
+    const updatedMediaCenter = await MediaCenter.findByIdAndUpdate(
+      mediaCenter._id,
+      {
+        courses: [...mediaCenter.courses, updatedBootcamp._id]
+      },
+      { new: true }
+    )
+
+    //add all quizzes and tasks to all courses of the media center
+    const quizzes = await Quiz.find({ bootcamp: mediaCenter._id })
+    const tasks = await Task.find({ bootcamp: mediaCenter._id })
+    const allCourses = updatedMediaCenter.courses
+
+    if (tasks.length > 0) {
+      for (const task of tasks) {
+        const mediaDay = await Day.findOne({ _id: task.day })
+
+        const mediaWeek = await Week.findOne({ days: mediaDay._id })
+
+        allCourses.forEach(async (course) => {
+          const week = await Week.findOne({
+            name: mediaWeek.name,
+            bootcamp: course._id
+          })
+
+          const day = await Day.findOne({ name: mediaDay.name, week: week._id })
+
+          const newTask = new Task({
+            description: task.description,
+            projectName: task.projectName,
+            path: task.path,
+            user: task.user,
+            bootcamp: course._id,
+            day: day._id
+          })
+          await newTask.save()
+        })
+      }
+    }
+
+    if (quizzes.length > 0) {
+      for (const quiz of quizzes) {
+        const mediaDay = await Day.findOne({ _id: quiz.day })
+
+        const mediaWeek = await Week.findOne({ days: mediaDay._id })
+
+        allCourses.forEach(async (course) => {
+          const week = await Week.findOne({
+            name: mediaWeek.name,
+            bootcamp: course._id
+          })
+
+          const day = await Day.findOne({ name: mediaDay.name, week: week._id })
+
+          const newQuiz = new Quiz({
+            description: quiz.description,
+            name: quiz.name,
+            question: quiz.question,
+            user: quiz.user,
+            bootcamp: course._id,
+            day: day._id,
+            time: quiz.time
+          })
+          await newQuiz.save()
+        })
+      }
+    }
 
     return res.status(201).json({
       success: true,

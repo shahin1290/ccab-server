@@ -353,7 +353,7 @@ exports.studentAnswers = async (req, res) => {
 //       success: false,
 //       error: "Server error: " + error.message,
 //     });
-//   }
+//   }`
 // };
 
 //@ DESC DElete A post
