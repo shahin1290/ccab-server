@@ -5,6 +5,11 @@ const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 const { dayValidCheck, uploadCallBack } = require('../middleware/dayValid')
 
 router
+  .route('/videos/:bootcampId')
+  // get all the days  for this specific week
+  .get(AllowIfLogin, grantAccess('readOwn', 'days'), dayController.getAllVideos)
+
+router
   .route('/:weekId')
   // get all the days  for this specific week
   .get(AllowIfLogin, grantAccess('readOwn', 'days'), dayController.getDays)
