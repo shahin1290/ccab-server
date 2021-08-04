@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator')
 const fs = require('fs')
 const Day = require('../models/dayModel')
 const Week = require('../models/weekModel')
+const Bootcamp = require('../models/bootcampModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
 
 //********** Validation Result ************
@@ -62,6 +63,42 @@ exports.getDays = async (req, res) => {
     //check if is the mentor for the bootcamp
     if (req.user.user_type === 'AdminUser') {
       days = await Day.find({ week: req.params.weekId })
+    }
+
+    if (days.lenght === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No Day found!'
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: days
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({
+      message: error
+    })
+  }
+}
+
+//@ DESC GET All Days
+//@ ROUTE /api/content/:weekId
+//@ access Protected/Student
+exports.getAllVideos = async (req, res) => {
+  const { bootcampId } = req.params
+  try {
+    const bootcamp = await Bootcamp.findById(bootcampId)
+
+    const weeks = await Week.find({ bootcamp: bootcamp._id, show: true })
+
+    let days = []
+
+    for (const week of weeks) {
+      const foundDays = await Day.find({ week: week._id, show: true })
+      days = [...days, ...foundDays]
     }
 
     if (days.lenght === 0) {
