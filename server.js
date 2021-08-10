@@ -90,7 +90,7 @@ app.post('/currency-convert', async (req, res, next) => {
 })
 
 // create new empty performance for bootcamp students every night(12am)
-cron.schedule('0 2 * * *', async () => {
+cron.schedule('0 0 * * *', async () => {
   const bootcamps = await Bootcamp.find()
   for (bootcamp of bootcamps) {
     const startDate = new Date(bootcamp.start_date).getTime()
