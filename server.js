@@ -13,7 +13,7 @@ const User = require('./models/userModel')
 const Bootcamp = require('./models/bootcampModel')
 const Performance = require('./models/performanceModel')
 const cron = require('node-cron')
-
+const Pusher = require('pusher');
 myDb()
 
 app.use(morgan('dev'))
@@ -28,6 +28,24 @@ app.use(cors())
 app.get('/', (req, res, next) => {
   res.send('Server Running...')
 })
+
+
+//pusher routes
+const pusher = new Pusher({
+  appId: "1245202",
+  key: "91fac7eec05b86dbcbb5",
+  secret: "f0833f5edb06ef6caa9d",
+  cluster: "eu",
+  useTLS: true
+});
+
+app.post('/update-editor', (req, res) => {
+  pusher.trigger('editor', 'text-update', {
+   ...req.body,
+  });
+
+  res.status(200).send('OK');
+});
 
 //contact mail
 app.post('/contact', (req, res, next) => {

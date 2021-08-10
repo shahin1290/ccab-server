@@ -16,8 +16,6 @@ exports.getAllPerformances = async (req, res, next) => {
   try {
     let performances
 
-    console.log('ddd', req.params.userId)
-
     const user = await User.findById(req.params.userId)
 
     if (req.user.user_type === 'AdminUser') {
@@ -44,6 +42,80 @@ exports.getAllPerformances = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       data: performances
+    })
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: 'Server Error' + err })
+  }
+}
+
+//@des Get top ten Performance for specific bootcamp
+//@route Get api/Performance/top-ten/:bootcampId
+//@accesss private (allow for all students)
+
+exports.getTopTenPerformances = async (req, res, next) => {
+  try {
+    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+
+    let totalPerformances = []
+
+    for (student of bootcamp.students) {
+      const performances = await Performance.find({
+        bootcamp: req.params.bootcampId,
+        student
+      })
+
+      const performanceScoreArray =
+        performances &&
+        performances.length &&
+        performances.map((performance) => {
+          const {
+            watchingLectureScore,
+            submittedQuizScore,
+            quizResultScore,
+            submittedTaskScore,
+            taskResultScore,
+            onlineScore
+          } = performance
+          return Math.trunc(
+            (watchingLectureScore +
+              submittedQuizScore +
+              quizResultScore +
+              submittedTaskScore +
+              taskResultScore +
+              onlineScore) /
+              4
+          )
+        })
+
+      const user = await User.findById(student)
+
+      totalPerformances = [
+        ...totalPerformances,
+        {
+          name: user.name,
+          avatar: user.avatar,
+          score: Math.ceil(
+            performanceScoreArray.reduce((a, b) => a + b) /
+              performanceScoreArray.length
+          )
+        }
+      ]
+    }
+
+    const sortedPerformances = totalPerformances.sort((a, b) => b.score - a.score)
+
+    const topTenPerformances = sortedPerformances.slice(0, 10)
+
+    if (!topTenPerformances.length)
+      return res
+        .status(404)
+        .json({ success: false, message: 'There is No Data Found' })
+
+    return res.status(200).json({
+      success: true,
+      data: topTenPerformances
     })
   } catch (err) {
     return res
@@ -152,7 +224,6 @@ exports.performanceDetails = async (req, res) => {
 //@accesss private (allow for Admin)
 exports.updatePerformance = async function (req, res) {
   try {
-    console.log('quizId', req.body.quizId);
     const { dayId, taskId, quizId, connected, taskResult, student } = req.body
 
     const day = await Day.findById(dayId)
@@ -285,7 +356,7 @@ exports.updatePerformance = async function (req, res) {
         score = 0
       }
 
-      let resultScore   
+      let resultScore
 
       if (quizAnswer.status === 'Failed') resultScore = 0
 
