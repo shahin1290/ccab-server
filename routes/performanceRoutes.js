@@ -4,6 +4,12 @@ const performanceController = require('../controllers/performanceController')
 const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 
 router
+  .route('/top-ten/:bootcampId')
+  // get top ten performances
+  .get(AllowIfLogin, performanceController.getTopTenPerformances)
+ 
+
+router
   .route('/daily-performance/:bootcampId')
   // specific performance details
   .get(AllowIfLogin, performanceController.performanceDetails)
