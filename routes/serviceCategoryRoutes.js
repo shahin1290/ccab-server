@@ -6,19 +6,13 @@ const { AllowIfLogin, grantAccess } = require('../middleware/auth')
 router
   .route('/')
   // get all the weeks
-  .get(
-    AllowIfLogin,
-    grantAccess('readAny', 'serviceCategories'),
-    serviceCategoryController.getServiceCategories
-  )
+  .get(serviceCategoryController.getServiceCategories)
   // create a new week
   .post(
     AllowIfLogin,
     grantAccess('createAny', 'serviceCategory'),
     serviceCategoryController.new
   )
-
-
 
 router
   .route('/:id')
