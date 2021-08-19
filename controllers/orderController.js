@@ -29,6 +29,78 @@ exports.stripePaymentIntent = async (req, res) => {
   }
 }
 
+exports.createSubscription = async (req, res) => {
+  //find the user if exists
+  var user = await User.findById(req.user._id)
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'No user found!'
+    })
+  }
+
+  //create the subscription plan with product and price
+
+  const product = await stripe.products.create({
+    name: 'Silver Plan'
+  })
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    unit_amount: 1000,
+    currency: 'usd',
+    recurring: {
+      interval: 'month'
+    }
+  })
+
+  // Create a new customer object
+  const customer = await stripe.customers.create({
+    email: user.email,
+    payment_method: req.body.payment_method,
+    invoice_settings: {
+      default_payment_method: req.body.payment_method
+    }
+  })
+
+  try {
+    // Create the subscription. Note we're expanding the Subscription's
+    // latest invoice and that invoice's payment_intent
+    // so we can pass it to the front end to confirm the payment
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [
+        {
+          price: price.id
+        }
+      ],
+      expand: ['latest_invoice.payment_intent']
+    })
+
+    return res.status(201).json({ success: true, data: subscription })
+
+    /* res.send({
+      subscriptionId: subscription.id,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+    }); */
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } })
+  }
+}
+
+exports.cancelSubscription = async (req, res) => {
+  try {
+    const deletedSubscription = await stripe.subscriptions.del(
+      req.body.subscriptionId
+    )
+
+    return res.status(201).json({ success: true, data: deletedSubscription })
+  } catch (error) {
+    return res.status(400).send({ error: { message: error.message } })
+  }
+}
+
 //@ DESC POST A NEW order
 //@ ROUTE /api/order/
 //@ access login user
@@ -36,8 +108,6 @@ exports.createOrder = async (req, res) => {
   const { token, amount, currency } = req.body
 
   const { id } = req.params
-
-  console.log(token, amount, currency, id)
 
   try {
     const user = await User.findById(req.user._id)
@@ -48,7 +118,8 @@ exports.createOrder = async (req, res) => {
       id === 'Silver Plan' ||
       id === 'Golden Plan' ||
       id === 'Diamond Plan' ||
-      id === 'bill'
+      id === 'bill' ||
+      id === 'subscription'
     ) {
       course = id
     } else {
@@ -64,15 +135,29 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    const newOrder = new Order({
-      course,
-      orderBy: user._id,
-      amount: Number(amount) / 100,
-      charge: token,
-      currency,
-      orderStatus: 'Delivered',
-      method: 'Card'
-    })
+    let newOrder
+
+    if (id === 'subscription') {
+      newOrder = new Order({
+        course,
+        orderBy: user._id,
+        amount: Number(amount) / 100,
+        charge: token,
+        currency,
+        orderStatus: 'Active',
+        method: 'Card'
+      })
+    } else {
+      newOrder = new Order({
+        course,
+        orderBy: user._id,
+        amount: Number(amount) / 100,
+        charge: token,
+        currency,
+        orderStatus: 'Delivered',
+        method: 'Card'
+      })
+    }
 
     const order = await newOrder.save()
 
@@ -91,7 +176,8 @@ exports.createOrder = async (req, res) => {
     if (
       (order._id && id === 'Silver Plan') ||
       (order._id && id === 'Golden Plan') ||
-      (order._id && id === 'Diamond Plan')
+      (order._id && id === 'Diamond Plan') ||
+      (order._id && id === 'subscription')
     ) {
       //send mail to admin
       sendMail(res, toUser, subject, html)
@@ -196,7 +282,8 @@ exports.ViewOrder = async (req, res) => {
       id === 'Silver Plan' ||
       id === 'Golden Plan' ||
       id === 'Diamond Plan' ||
-      id === 'bill'
+      id === 'bill' ||
+      id === 'subscription'
     ) {
       course = id
     } else {
