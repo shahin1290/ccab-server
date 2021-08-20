@@ -41,7 +41,7 @@ exports.createSubscription = async (req, res) => {
   }
 
   //create the subscription plan with product and price
-
+  /* 
   const product = await stripe.products.create({
     name: 'Silver Plan'
   })
@@ -55,16 +55,18 @@ exports.createSubscription = async (req, res) => {
     }
   })
 
-  // Create a new customer object
-  const customer = await stripe.customers.create({
-    email: user.email,
-    payment_method: req.body.payment_method,
-    invoice_settings: {
-      default_payment_method: req.body.payment_method
-    }
-  })
+  */
 
   try {
+    // Create a new customer object
+    const customer = await stripe.customers.create({
+      email: user.email,
+      payment_method: req.body.payment_method,
+      invoice_settings: {
+        default_payment_method: req.body.payment_method
+      }
+    })
+
     // Create the subscription. Note we're expanding the Subscription's
     // latest invoice and that invoice's payment_intent
     // so we can pass it to the front end to confirm the payment
@@ -72,7 +74,7 @@ exports.createSubscription = async (req, res) => {
       customer: customer.id,
       items: [
         {
-          price: price.id
+          plan: req.body.planId
         }
       ],
       expand: ['latest_invoice.payment_intent']
@@ -94,6 +96,17 @@ exports.cancelSubscription = async (req, res) => {
     const deletedSubscription = await stripe.subscriptions.del(
       req.body.subscriptionId
     )
+
+    //update the order status
+    if (deletedSubscription.status === 'canceled') {
+      await Order.findOneAndUpdate(
+        {
+          orderBy: req.user._id,
+          charge: req.body.subscriptionId
+        },
+        { orderStatus: 'Canceled' }
+      )
+    }
 
     return res.status(201).json({ success: true, data: deletedSubscription })
   } catch (error) {
@@ -119,7 +132,7 @@ exports.createOrder = async (req, res) => {
       id === 'Golden Plan' ||
       id === 'Diamond Plan' ||
       id === 'bill' ||
-      id === 'subscription'
+      id.includes('subscription')
     ) {
       course = id
     } else {
@@ -137,7 +150,7 @@ exports.createOrder = async (req, res) => {
 
     let newOrder
 
-    if (id === 'subscription') {
+    if (id.includes('subscription')) {
       newOrder = new Order({
         course,
         orderBy: user._id,
@@ -177,7 +190,7 @@ exports.createOrder = async (req, res) => {
       (order._id && id === 'Silver Plan') ||
       (order._id && id === 'Golden Plan') ||
       (order._id && id === 'Diamond Plan') ||
-      (order._id && id === 'subscription')
+      (order._id && id.includes('subscription'))
     ) {
       //send mail to admin
       sendMail(res, toUser, subject, html)
@@ -283,7 +296,7 @@ exports.ViewOrder = async (req, res) => {
       id === 'Golden Plan' ||
       id === 'Diamond Plan' ||
       id === 'bill' ||
-      id === 'subscription'
+      id.includes('subscription')
     ) {
       course = id
     } else {
