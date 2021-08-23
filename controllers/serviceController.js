@@ -126,7 +126,7 @@ exports.newService = async (req, res, next) => {
 
     return res.status(201).json({
       success: true,
-      data: updatedService
+      data: savedService
     })
   } catch (err) {
     console.log(err)

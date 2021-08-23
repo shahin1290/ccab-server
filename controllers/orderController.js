@@ -40,23 +40,6 @@ exports.createSubscription = async (req, res) => {
     })
   }
 
-  //create the subscription plan with product and price
-  /* 
-  const product = await stripe.products.create({
-    name: 'Silver Plan'
-  })
-
-  const price = await stripe.prices.create({
-    product: product.id,
-    unit_amount: 1000,
-    currency: 'usd',
-    recurring: {
-      interval: 'month'
-    }
-  })
-
-  */
-
   try {
     // Create a new customer object
     const customer = await stripe.customers.create({
@@ -66,6 +49,12 @@ exports.createSubscription = async (req, res) => {
         default_payment_method: req.body.payment_method
       }
     })
+
+    //save customer id in user model
+    await User.findOneAndUpdate(
+      { _id: user._id },
+      { stripeCustomerId: customer.id }
+    )
 
     // Create the subscription. Note we're expanding the Subscription's
     // latest invoice and that invoice's payment_intent
@@ -89,6 +78,17 @@ exports.createSubscription = async (req, res) => {
   } catch (error) {
     return res.status(400).send({ error: { message: error.message } })
   }
+}
+
+exports.previewSubscription = async (req, res) => {
+  //get stripeCustomerId from user
+  const user = await User.findById(req.user._id)
+
+  const invoice = await stripe.invoices.retrieveUpcoming({
+    customer: user.stripeCustomerId
+  })
+
+  return res.status(201).json({ success: true, data: invoice })
 }
 
 exports.cancelSubscription = async (req, res) => {
