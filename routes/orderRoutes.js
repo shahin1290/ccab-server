@@ -46,4 +46,13 @@ router
   .route('/stripe/stripe-payment-intent')
   .post(AllowIfLogin, orderController.stripePaymentIntent)
 
+
+router
+.route('/stripe/stripe-subscription')
+.post(AllowIfLogin, orderController.createSubscription)
+
+router
+.route('/stripe/cancel-subscription')
+.post(AllowIfLogin, orderController.cancelSubscription)
+
 module.exports = router
