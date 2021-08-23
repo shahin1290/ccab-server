@@ -70,6 +70,10 @@ const userSchema = new mongoose.Schema({
 
   status: { type: String, enum: ['online', 'offline'] },
 
+  stripeCustomerId: {
+    type: String
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

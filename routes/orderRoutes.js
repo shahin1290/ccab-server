@@ -14,14 +14,12 @@ router.route('/myorders').get(AllowIfLogin, orderController.studentOrders)
 
 router
   .route('/:bootcampId/klarna/session')
-  .get( AllowIfLogin,orderController.readKlarnaSession)
+  .get(AllowIfLogin, orderController.readKlarnaSession)
   .post(AllowIfLogin, orderController.createKlarnaSession)
 
-  router
+router
   .route('/:bootcampId/klarna/authorize')
-  .post( AllowIfLogin,orderController.readKlarnaSession)
- 
-  
+  .post(AllowIfLogin, orderController.readKlarnaSession)
 
 router
   .route('/:bootcampId/klarna/order')
@@ -46,13 +44,16 @@ router
   .route('/stripe/stripe-payment-intent')
   .post(AllowIfLogin, orderController.stripePaymentIntent)
 
+router
+  .route('/stripe/stripe-subscription')
+  .post(AllowIfLogin, orderController.createSubscription)
 
 router
-.route('/stripe/stripe-subscription')
-.post(AllowIfLogin, orderController.createSubscription)
+  .route('/stripe/view-subscription')
+  .get(AllowIfLogin, orderController.previewSubscription)
 
 router
-.route('/stripe/cancel-subscription')
-.post(AllowIfLogin, orderController.cancelSubscription)
+  .route('/stripe/cancel-subscription')
+  .post(AllowIfLogin, orderController.cancelSubscription)
 
 module.exports = router
