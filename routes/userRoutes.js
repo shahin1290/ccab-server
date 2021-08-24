@@ -52,5 +52,9 @@ router
 router.route("/login").post(userValidatorChek, userController.login);
 router.route("/register").post(userValidatorChek, userController.register);
 
+router.route("/forgot-password").post(userValidatorChek, userController.forgotPassword);
+router.route("/reset-password/:token").put(userValidatorChek, userController.resetPassword);
+
+
 
 module.exports = router;

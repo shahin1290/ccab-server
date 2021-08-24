@@ -24,7 +24,7 @@ const sendMail = (
     }
   })
 
-  const emailTemplate = studentEmailTemplate(toUser.name, html.text, html.assignment)
+  const emailTemplate = studentEmailTemplate(toUser.name, html.text, html.link)
 
   const mailOptions_ForStudent = {
     from: process.env.email,
