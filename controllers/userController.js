@@ -812,7 +812,7 @@ exports.forgotPassword = async (req, res, next) => {
     //send mail .............>
     const toUser = { email: req.body.email, name: user.name }
 
-    const link = `http://localhost:3000/reset-password/${resetToken}`
+    const link = `https://ccab.tech/reset-password/${resetToken}`
 
     sendResetPasswordMail(res, toUser, link)
 
