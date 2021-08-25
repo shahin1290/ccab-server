@@ -1,4 +1,6 @@
-const studentEmailTemplate = (name, text, assignment) => {
+const passwordResetEmailTemplate = (user, link) => {
+  //functions next payment due
+
   return `
   <!doctype html>
   <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -165,14 +167,14 @@ const studentEmailTemplate = (name, text, assignment) => {
               >
             <![endif]-->
   
-                              <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;">
+                              <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:bottom;width:100%;  ">
   
-                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:bottom;" width="100%">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:bottom; " width="100%">
   
-                                      <tr>
+                                      <tr style="background: #6566DA;">
                                           <td align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;">
   
-                                              <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                                              <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px; ">
                                                   <tbody>
                                                       <tr>
                                                           <td style="width:64px;">
@@ -187,39 +189,56 @@ const studentEmailTemplate = (name, text, assignment) => {
                                           </td>
                                       </tr>
   
-                                      <tr>
+                                      <tr style="background: #6566DA;">
                                           <td align="center" style="font-size:0px;padding:10px 25px;padding-bottom:40px;word-break:break-word;">
   
-                                              <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:bold;line-height:1;text-align:center;color:#555;">
+                                              <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:28px;font-weight:bold;line-height:1;text-align:center;color:#fff; ">
                                                   Coding for better life
                                               </div>
   
                                           </td>
                                       </tr>
   
-                                      <tr>
-                                          <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
-  
-                                              <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                                  Hi ${name}!<br /><br /> ${text} :
-                                                  <strong>${assignment}</strong><br /><br /><br />
-                                              </div>
-  
-                                          </td>
-                                      </tr>
+      
   
                                       <tr>
                                           <td align="center" style="font-size:0px;padding:10px 25px;padding-top:30px;padding-bottom:50px;word-break:break-word;">
   
-                                              <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
-                                                  <tr>
-                                                      <td align="center" bgcolor="#2F67F6" role="presentation" style="border:none;border-radius:3px;color:#ffffff;cursor:auto;padding:15px 25px;" valign="middle">
-                                                          <a href="https://ccab.tech/profile" style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
-                                                              Go to Profile
-                                                          </a>
-                                                      </td>
-                                                  </tr>
-                                              </table>
+                                             
+                                            
+                                             <table width="100%" border="0" cellpadding="0" cellspacing="0"
+        style="font-family: Helvetica Neue, Helvetica, Arial, sans-serif;">
+        <tr>
+            <td>
+                <!-- // START CONTAINER -->
+              <tr>
+                                          <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+  
+                                              <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
+                                                  Hi ${user.name}!<br /><br /> 
+                                                We received a request to reset the password for your Codify College account.
+
+To reset your GoFundMe password, simply click the button below (valid for only 10 minutes).
+                                              </div>
+  
+                                          </td>
+                                      </tr>
+
+                                      
+    <!-- END CONTAINER \\ -->
+
+    <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%; margin-top: 40px;">
+    <tr>
+        <td align="center" bgcolor="#2F67F6" role="presentation" style="border:none;border-radius:3px;color:#ffffff;cursor:auto;padding:15px 25px;" valign="middle">
+            <a href=${link} style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
+                Reset Password
+            </a>
+        </td>
+    </tr>
+</table>
+    </td>
+    </tr>
+    </table>
   
                                           </td>
                                       </tr>
@@ -309,6 +328,8 @@ const studentEmailTemplate = (name, text, assignment) => {
                                           </tr>
                                       </tbody>
                                   </table>
+                                
+                                
   
                               </div>
   
@@ -342,4 +363,4 @@ const studentEmailTemplate = (name, text, assignment) => {
     `
 }
 
-module.exports = { studentEmailTemplate }
+module.exports = { passwordResetEmailTemplate }

@@ -8,6 +8,7 @@ const Bootcamp = require('../models/bootcampModel')
 const Quiz = require('../models/quizModel')
 const QuizAnswer = require('../models/quizAnswerModel')
 const { sendMail } = require('../middleware/sendMail')
+const { sendResetPasswordMail } = require('../middleware/sendResetPasswordMail')
 const crypto = require('crypto')
 
 //********** validation Resault ************
@@ -810,13 +811,10 @@ exports.forgotPassword = async (req, res, next) => {
 
     //send mail .............>
     const toUser = { email: req.body.email, name: user.name }
-    const subjet = 'Password Reset'
-    const html = {
-      student: '',
-      text: `Your password reset token (valid for only 10 minutes).`,
-      link: `http://localhost:3000/reset-password/${resetToken}`
-    }
-    sendMail(res, toUser, subjet, html)
+
+    const link = `http://localhost:3000/reset-password/${resetToken}`
+
+    sendResetPasswordMail(res, toUser, link)
 
     res.status(200).json({
       status: 'success',
@@ -853,13 +851,15 @@ exports.resetPassword = async (req, res) => {
         .json({ success: false, message: 'Token is invalid or has expired' })
     }
     // 3) Update changedPasswordAt property for the user
-    user.password = req.body.password
+
+    // salt the password
+    const salt = await bcrypt.genSalt(10)
+    user.password = await bcrypt.hash(req.body.password, salt)
     user.passwordResetToken = undefined
     user.passwordResetExpires = undefined
     await user.save()
 
-    // 4) Log the user in, send JWT
-
+    // 4) Log the user in
     const generateToken = (id) => {
       return jwt.sign({ id }, process.env.JWT_KEY)
     }
@@ -877,8 +877,6 @@ exports.resetPassword = async (req, res) => {
       language: user.language,
       avatar: user.avatar
     })
-
-    //createSendToken(user, 200, req, res)
   } catch (err) {
     console.log('Server Error : ' + err)
     return res
