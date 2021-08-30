@@ -36,8 +36,10 @@ router
   .route('/:bootcampId/:taskId/myAnswer')
   .get(AllowIfLogin, grantAccess('readOwn', 'Answer'), answerController.viewOne)
 
-  //update specific answer as Mentor *** check the bootcampId
+//update specific answer as Mentor *** check the bootcampId
 
+router
+  .route('/:bootcampId/:taskId/:id')
   .put(
     AllowIfLogin,
     grantAccess('updateOwn', 'Answer'),
