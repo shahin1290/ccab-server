@@ -50,7 +50,7 @@ router
 
 router
   .route('/stripe/view-subscription')
-  .get(AllowIfLogin, orderController.previewSubscription)
+  .post(AllowIfLogin, orderController.previewSubscription)
 
 router
   .route('/stripe/cancel-subscription')

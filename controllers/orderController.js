@@ -7,6 +7,7 @@ const Service = require('../models/serviceModel')
 const stripe = require('stripe')(process.env.STRIPE_SECRET)
 const axios = require('axios')
 const { sendMail } = require('../middleware/sendMail')
+const { sendSubscriptionMail } = require('../middleware/sendSubscriptionMail')
 
 exports.stripePaymentIntent = async (req, res) => {
   const { paymentMethodType, currency, amount } = req.body
@@ -76,19 +77,28 @@ exports.createSubscription = async (req, res) => {
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
     }); */
   } catch (error) {
-    return res.status(400).send({ error: { message: error.message } })
+    return res.status(404).json({
+      success: false,
+      message: error.message
+    })
   }
 }
 
 exports.previewSubscription = async (req, res) => {
   //get stripeCustomerId from user
-  const user = await User.findById(req.user._id)
+  const user = await User.findById(req.body.orderBy)
+  try {
+    const invoice = await stripe.invoices.retrieveUpcoming({
+      customer: user.stripeCustomerId
+    })
 
-  const invoice = await stripe.invoices.retrieveUpcoming({
-    customer: user.stripeCustomerId
-  })
-
-  return res.status(201).json({ success: true, data: invoice })
+    return res.status(201).json({ success: true, data: invoice })
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: error.message
+    })
+  }
 }
 
 exports.cancelSubscription = async (req, res) => {
@@ -101,7 +111,7 @@ exports.cancelSubscription = async (req, res) => {
     if (deletedSubscription.status === 'canceled') {
       await Order.findOneAndUpdate(
         {
-          orderBy: req.user._id,
+          orderBy: req.body.orderBy,
           charge: req.body.subscriptionId
         },
         { orderStatus: 'Canceled' }
@@ -110,7 +120,10 @@ exports.cancelSubscription = async (req, res) => {
 
     return res.status(201).json({ success: true, data: deletedSubscription })
   } catch (error) {
-    return res.status(400).send({ error: { message: error.message } })
+    return res.status(404).json({
+      success: false,
+      message: error.message
+    })
   }
 }
 
@@ -122,9 +135,9 @@ exports.createOrder = async (req, res) => {
 
   const { id } = req.params
 
-  try {
-    const user = await User.findById(req.user._id)
+  const user = await User.findById(req.user._id)
 
+  try {
     let course
 
     if (
@@ -189,11 +202,27 @@ exports.createOrder = async (req, res) => {
     if (
       (order._id && id === 'Silver Plan') ||
       (order._id && id === 'Golden Plan') ||
-      (order._id && id === 'Diamond Plan') ||
-      (order._id && id.includes('subscription'))
+      (order._id && id === 'Diamond Plan')
     ) {
       //send mail to admin
       sendMail(res, toUser, subject, html)
+
+      return res.status(201).json({ success: true, data: order })
+    } else if (order._id && id.includes('subscription')) {
+      //get the customer invoice
+      const invoice = await stripe.invoices.retrieveUpcoming({
+        customer: user.stripeCustomerId
+      })
+
+      const subscription = await stripe.subscriptions.retrieve(order.charge)
+
+      console.log(subscription)
+
+      //send mail to admin
+      sendMail(res, toUser, subject, html)
+
+      //send mail to student
+      sendSubscriptionMail(res, user, invoice, subscription)
 
       return res.status(201).json({ success: true, data: order })
     } else if (order._id && id === 'bill') {
@@ -274,7 +303,6 @@ exports.studentOrders = async (req, res) => {
       data: studentOrders
     })
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       success: false,
       message: 'Server error: ' + error.message

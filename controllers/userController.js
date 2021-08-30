@@ -8,7 +8,8 @@ const Bootcamp = require('../models/bootcampModel')
 const Quiz = require('../models/quizModel')
 const QuizAnswer = require('../models/quizAnswerModel')
 const { sendMail } = require('../middleware/sendMail')
-const { Access } = require('accesscontrol')
+const { sendResetPasswordMail } = require('../middleware/sendResetPasswordMail')
+const crypto = require('crypto')
 
 //********** validation Resault ************
 
@@ -781,6 +782,100 @@ exports.giveAccess = async (req, res, next) => {
       email: updatedUser.email,
       user_type: updatedUser.user_type,
       token: updatedUser.token
+    })
+  } catch (err) {
+    console.log('Server Error : ' + err)
+    return res
+      .status(500)
+      .json({ success: false, message: 'Server Error : ' + err })
+  }
+}
+
+//@des to give accesss for user to update password
+exports.forgotPassword = async (req, res, next) => {
+  // 1) Get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email })
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'No User  found!' })
+  }
+
+  // 2) Generate the random reset token
+  const resetToken = user.createPasswordResetToken()
+  await user.save({ validateBeforeSave: false })
+
+  // 3) Send it to user's email
+  try {
+    const resetURL = `${req.protocol}://${req.get(
+      'host'
+    )}/api/users/reset-password/${resetToken}`
+
+    //send mail .............>
+    const toUser = { email: req.body.email, name: user.name }
+
+    const link = `https://ccab.tech/reset-password/${resetToken}`
+
+    sendResetPasswordMail(res, toUser, link)
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Reset instructions sent to email!'
+    })
+  } catch (err) {
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+    await user.save({ validateBeforeSave: false })
+
+    return res
+      .status(500)
+      .json({ success: false, message: 'Server Error : ' + err })
+  }
+}
+
+exports.resetPassword = async (req, res) => {
+  try {
+    // 1) Get user based on the token
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex')
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }
+    })
+
+    // 2) If token has not expired, and there is user, set the new password
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Token is invalid or has expired' })
+    }
+    // 3) Update changedPasswordAt property for the user
+
+    // salt the password
+    const salt = await bcrypt.genSalt(10)
+    user.password = await bcrypt.hash(req.body.password, salt)
+    user.passwordResetToken = undefined
+    user.passwordResetExpires = undefined
+    await user.save()
+
+    // 4) Log the user in
+    const generateToken = (id) => {
+      return jwt.sign({ id }, process.env.JWT_KEY)
+    }
+
+    user.token = generateToken(user._id)
+    await user.save()
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      user_type: user.user_type,
+      phone: user.phoneNumber,
+      token: user.token,
+      language: user.language,
+      avatar: user.avatar
     })
   } catch (err) {
     console.log('Server Error : ' + err)

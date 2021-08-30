@@ -421,6 +421,8 @@ exports.updateAnswerStatus = async (req, res) => {
 
     const { id, taskId, bootcampId } = req.params
 
+    console.log(';;;', id, taskId, bootcampId);
+
     const bootcamp = await Bootcamp.findById(bootcampId)
 
     if (!bootcamp) {

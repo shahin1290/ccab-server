@@ -1,18 +1,10 @@
 var mailer = require('nodemailer')
-const { studentEmailTemplate } = require('../util/student_email_template')
+const {
+  passwordResetEmailTemplate
+} = require('../util/password_reset_template')
 let notErr = true
 
-const sendMail = (
-  res,
-  toUser,
-  subject,
-  html = {
-    student: '',
-    text: ' default text...',
-    assignment: '',
-    link: '#'
-  }
-) => {
+const sendResetPasswordMail = (res, user, link) => {
   const transporter = mailer.createTransport({
     service: 'gmail',
     //service is the e-mail service that you want to use
@@ -24,14 +16,14 @@ const sendMail = (
     }
   })
 
-  const emailTemplate = studentEmailTemplate(toUser.name, html.text, html.link)
+  const emailTemplate = passwordResetEmailTemplate(user, link)
 
   const mailOptions_ForStudent = {
     from: process.env.email,
-    to: toUser.email,
+    to: user.email,
     cc: '',
     bcc: '',
-    subject: subject,
+    subject: 'Codify College Password Reset',
     text: '',
     html: emailTemplate
   }
@@ -49,5 +41,5 @@ const sendMail = (
 }
 
 module.exports = {
-  sendMail
+  sendResetPasswordMail
 }
