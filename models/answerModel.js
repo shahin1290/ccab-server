@@ -1,40 +1,53 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 // student answer and we can knowm,who is the sender of answers
 const answerSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: 'User'
   },
 
- assignmentLink: {
-    type: String,
+  assignmentLink: {
+    type: String
   },
   path: {
-    type: String,
+    type: String
   },
   task: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "Task",
+    ref: 'Task'
   },
 
   isSend: {
     type: Boolean,
-    default: false,
+    default: false
   },
   isViewed: {
     type: Boolean,
-    default: false,
+    default: false
   },
-  status:{type:String , require:true,  
-          default:'Not Sent', 
-          enum:['Excellent','Good','Not Bad','Failed','Pending','Sent','Not Sent']},
+  status: {
+    type: String,
+    require: true,
+    default: 'Not Sent',
+    enum: [
+      'Excellent',
+      'Good',
+      'Not Bad',
+      'Failed',
+      'Pending',
+      'Sent',
+      'Not Sent'
+    ]
+  },
+
+  downloadedAt: {type: Date},
   createdAt: {
     type: Date,
-    default: Date.now,
-  },
-});
+    default: Date.now
+  }
+})
 
-module.exports = mongoose.model("Answer", answerSchema);
+module.exports = mongoose.model('Answer', answerSchema)

@@ -15,86 +15,16 @@ function getValidationResualt(req) {
 //@ DESC GET All Days
 //@ ROUTE /api/content/:weekId
 //@ access Protected/Student
-exports.getDays = async (req, res) => {
-  const { weekId } = req.params
-  try {
-    // check if the week 'show is true' return message the week is not upload it
-    const week = await Week.findById(weekId).populate(
-      'bootcamp',
-      'mentor price'
-    )
-
-    if (!week) {
-      return res.status(404).json({
-        success: false,
-        message: 'No Week found!'
-      })
-    }
-
-    let days
-
-    //check if the student is enrolled in the bootcamp
-    if (req.user.user_type === 'StudentUser') {
-      const isValidStudent = await checkIfStudentValid(
-        week.bootcamp,
-        req.user._id
-      )
-
-      if (!isValidStudent && week.bootcamp.price > 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Student is not enrolled in this bootcamp'
-        })
-      }
-      days = await Day.find({ week: req.params.weekId, show: true })
-    }
-
-    //check if is the mentor for the bootcamp
-    if (req.user.user_type === 'MentorUser') {
-      if (!req.user._id.equals(week.bootcamp.mentor)) {
-        return res.status(404).json({
-          success: false,
-          message: 'You are not allowed mentor for this bootcamp'
-        })
-      }
-      days = await Day.find({ week: req.params.weekId })
-    }
-
-    //check if is the mentor for the bootcamp
-    if (req.user.user_type === 'AdminUser') {
-      days = await Day.find({ week: req.params.weekId })
-    }
-
-    if (days.lenght === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No Day found!'
-      })
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: days
-    })
-  } catch (error) {
-    console.log(error)
-    return res.status(500).json({
-      message: error
-    })
-  }
-}
-
-//@ DESC GET All Days
-//@ ROUTE /api/content/:weekId
-//@ access Protected/Student
 exports.getAllDailyActivities = async (req, res) => {
   try {
-    const dailyActivities = await DailyActivity.find({
-      bootcamp: req.body.bootcampId,
+    const dailyActivity = await DailyActivity.findOne({
+      bootcamp: req.params.bootcampId,
       student: req.user._id
     })
+      .populate('watchingLectures.lecture')
+      .populate('watchingLectures.week')
 
-    if (dailyActivities.lenght === 0) {
+    if (!dailyActivity) {
       return res.status(404).json({
         success: false,
         message: 'No Activity found!'
@@ -103,7 +33,7 @@ exports.getAllDailyActivities = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      data: dailyActivities
+      data: dailyActivity.watchingLectures
     })
   } catch (error) {
     console.log(error)
@@ -122,30 +52,60 @@ exports.newDailyAcivity = async (req, res) => {
 
     const start = new Date().setHours(0, 0, 0, 0)
     const end = new Date().setHours(23, 59, 59, 999)
+    /* createdAt: { $gte: start, $lt: end } */
 
     const dailyActivity = await DailyActivity.findOne({
-      'watchingLectures.lecture': req.body.dayId,
-      student: req.user._id,
-      createdAt: { $gte: start, $lt: end }
+      student: req.user._id
     })
 
     if (!dailyActivity) {
       const newDailyActivity = new DailyActivity({
         watchingLectures: [
           {
-            lecture: req.body.dayId
+            lecture: req.body.dayId,
+            duration: req.body.duration,
+            week: req.body.weekId
           }
         ],
         student: req.user._id,
-        bootcamp: req.body.bootcampId
+        bootcamp: req.params.bootcampId
       })
 
-      const dailyActivity = await newDailyActivity.save()
+      const savedDailyActivity = await newDailyActivity.save()
 
-      if (dailyActivity)
+      if (savedDailyActivity)
         res.status(201).json({
           success: true,
-          data: dailyActivity
+          data: savedDailyActivity
+        })
+    } else {
+      //check if the video is already saved
+
+      /* const savedDailyActivity = await DailyActivity.findOne({
+        'watchingLectures.lecture': req.body.dayId,
+        student: req.user._id
+      }) */
+
+      const updatedDailyActivity = await DailyActivity.findOneAndUpdate(
+        {
+          student: req.user._id
+        },
+        {
+          watchingLectures: [
+            ...dailyActivity.watchingLectures,
+            {
+              lecture: req.body.dayId,
+              duration: req.body.duration,
+              week: req.body.weekId
+            }
+          ]
+        }
+      )
+
+      if (updatedDailyActivity)
+        res.status(201).json({
+          success: true,
+          data: updatedDailyActivity
         })
     }
   } catch (error) {
@@ -242,13 +202,9 @@ exports.view = async (req, res) => {
 //@ access Protected/Admin
 exports.updateDailyAcivity = async (req, res) => {
   try {
-    const start = new Date().setHours(0, 0, 0, 0)
-    const end = new Date().setHours(23, 59, 59, 999)
-
     const dailyActivity = await DailyActivity.findOne({
       'watchingLectures.lecture': req.body.dayId,
-      student: req.user._id,
-      createdAt: { $gte: start, $lt: end }
+      student: req.user._id
     })
 
     if (!dailyActivity) {
@@ -258,12 +214,11 @@ exports.updateDailyAcivity = async (req, res) => {
       })
     }
 
-
     const updateddailyActivity = await DailyActivity.findOneAndUpdate(
       {
         _id: dailyActivity._id
       },
-      { $set: { 'watchingLectures.$[el].endTimeInSeconds': req.body.endTime } },
+      { $set: { 'watchingLectures.$[el].endDate': new Date() } },
 
       {
         arrayFilters: [{ 'el.lecture': req.body.dayId }],

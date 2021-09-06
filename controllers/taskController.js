@@ -424,6 +424,19 @@ exports.downloadFile = async (req, res, next) => {
     if (!assignment)
       return res.status(404).json({ success: false, message: 'File Not found' })
 
+    //update the student answer to save the downloaded time
+    if (req.user.user_type === 'StudentUser') {
+      const answer = await Answer.findOne({
+        user: req.user._id,
+        task: assignment._id
+      })
+
+      // set the isViewed to true;
+      await answer.updateOne({ downloadedAt: new Date() })
+
+      console.log(answer)
+    }
+
     //download the PDF file
     return res.download(assignment.path)
   } catch (err) {

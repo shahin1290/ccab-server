@@ -3,6 +3,7 @@ const QuizAnswer = require('../models/quizAnswerModel')
 const Bootcamp = require('../models/bootcampModel')
 const Quiz = require('../models/quizModel')
 const { checkIfStudentValid } = require('../util/checkStudentValidity')
+const { sendMail } = require('../middleware/sendMail')
 
 //********** Functions ************************************
 
@@ -276,6 +277,7 @@ exports.quizAnswerDetails = async (req, res) => {
 //@route PUT api/quizAnswer/:quizId/:id
 //@accesss private (allow for Admin, Mentor)
 exports.updateQuizAnswer = async function (req, res) {
+  console.log(req.body)
   try {
     const { quizId, bootcampId } = req.params
 
@@ -320,8 +322,9 @@ exports.updateQuizAnswer = async function (req, res) {
           user: req.user._id
         },
         {
-          answers: req.body,
-          status: calculateResult(quiz, req.body),
+          answers: req.body.answer,
+          status: calculateResult(quiz, req.body.answer),
+          quizTime: req.body.quizTime,
           createdAt: new Date()
         }
       )
@@ -329,30 +332,27 @@ exports.updateQuizAnswer = async function (req, res) {
 
     //send email to the student (graded Answer) .............>
     const toUser = {
-      email: updatedQuizAnswer.user.email,
-      name: updatedQuizAnswer.user.name
+      email: req.user.email,
+      name: req.user.name
     }
-    const subjet =
-      'New grade: is updated in ' + updatedQuizAnswer.quiz.name + ' Quiz'
+    const subjet = 'New grade: is updated in ' + ' Quiz'
     const html = {
       student: '',
       text: 'We want to inform you that your quiz has been graded in ',
       quiz:
         ' ' +
-        updatedQuizAnswer.quiz.name +
         ' assignment.<br><br> <b>You can Check the new grade by logging in to your profile OR Click below!</b>',
       link: 'https://ccab.tech/profile'
     }
     const mailStatus = sendMail(res, toUser, subjet, html)
 
-    if (mailStatus)
-      return res.status(200).json({
-        success: true,
-        data: {
-          quizAnswer: updatedQuizAnswer,
-          status: calculateResult(quiz, req.body)
-        }
-      })
+    return res.status(200).json({
+      success: true,
+      data: {
+        quizAnswer: updatedQuizAnswer,
+        status: calculateResult(quiz, req.body.answer)
+      }
+    })
   } catch (err) {
     return res
       .status(500)

@@ -4,7 +4,10 @@ const dailyActivitySchema = new mongoose.Schema({
   watchingLectures: [
     {
       lecture: { type: mongoose.Schema.Types.ObjectId, ref: 'Day' },
-      endTimeInSeconds: { type: Number, default: 0 }
+      week: { type: mongoose.Schema.Types.ObjectId, ref: 'Week' },
+      duration: { type: Number, default: 0 },
+      startDate: { type: Date, default: Date.now },
+      endDate: { type: Date, default: Date.now }
     }
   ],
 
