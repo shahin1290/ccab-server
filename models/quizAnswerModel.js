@@ -33,10 +33,8 @@ const quizAnswerSchema = new mongoose.Schema({
     required: true
   },
 
-  finishedTime: {
-    type: String,
-    set: (val) =>
-      val > 60 ? `${Math.floor(val / 60)} hour(s) : ${val % 60} minute(s)` : val
+  quizTime: {
+    type: String
   },
 
   createdAt: {

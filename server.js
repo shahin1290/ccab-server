@@ -13,7 +13,7 @@ const User = require('./models/userModel')
 const Bootcamp = require('./models/bootcampModel')
 const Performance = require('./models/performanceModel')
 const cron = require('node-cron')
-const Pusher = require('pusher');
+const Pusher = require('pusher')
 myDb()
 
 app.use(morgan('dev'))
@@ -29,23 +29,22 @@ app.get('/', (req, res, next) => {
   res.send('Server Running...')
 })
 
-
 //pusher routes
 const pusher = new Pusher({
-  appId: "1245202",
-  key: "91fac7eec05b86dbcbb5",
-  secret: "f0833f5edb06ef6caa9d",
-  cluster: "eu",
+  appId: '1245202',
+  key: '91fac7eec05b86dbcbb5',
+  secret: 'f0833f5edb06ef6caa9d',
+  cluster: 'eu',
   useTLS: true
-});
+})
 
 app.post('/update-editor', (req, res) => {
   pusher.trigger('editor', 'text-update', {
-   ...req.body,
-  });
+    ...req.body
+  })
 
-  res.status(200).send('OK');
-});
+  res.status(200).send('OK')
+})
 
 //contact mail
 app.post('/contact', (req, res, next) => {
@@ -125,6 +124,7 @@ const appointmentRoutes = require('./routes/appointmentRoutes')
 const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes')
 const performanceRoutes = require('./routes/performanceRoutes')
 const mediaCenterRoutes = require('./routes/mediaCenterRoutes')
+const dailyActivityRoutes = require('./routes/dailyActivityRoutes')
 
 app.use('/api/users', userRoutes)
 app.use('/api/tasks', taskRoutes)
@@ -143,6 +143,7 @@ app.use('/api/appointment', appointmentRoutes)
 app.use('/api/serviceCategory', serviceCategoryRoutes)
 app.use('/api/performance', performanceRoutes)
 app.use('/api/mediaCenter', mediaCenterRoutes)
+app.use('/api/dailyActivity', dailyActivityRoutes)
 
 const server = app.listen(PORT, () => {
   console.log('The server is running on port: ' + PORT)
