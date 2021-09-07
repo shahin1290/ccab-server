@@ -416,11 +416,10 @@ exports.deleteQuizAnswer = async function (req, res) {
 //@ DESC get my answer
 //@ ROUTE /api/answers/myanswers
 exports.studentQuizAnswers = async (req, res) => {
-  console.log(req.user._id)
   try {
     const quizAnswers = await QuizAnswer.find({
       user: req.user._id
-    })
+    }).populate('quiz')
 
     if (!quizAnswers.length) {
       return res.status(404).json({
