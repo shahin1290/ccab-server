@@ -418,7 +418,7 @@ exports.deleteQuizAnswer = async function (req, res) {
 exports.studentQuizAnswers = async (req, res) => {
   try {
     const quizAnswers = await QuizAnswer.find({
-      user: req.user._id
+      user: req.params.userId
     }).populate('quiz')
 
     if (!quizAnswers.length) {

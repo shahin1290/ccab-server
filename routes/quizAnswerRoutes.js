@@ -10,7 +10,7 @@ router
     .get(quizAnswerController.getMyQizzeAnswer)
 
 router
-  .route('/myQuizAnswers')
+  .route('/myQuizAnswers/:userId')
   .get(
     AllowIfLogin,
     grantAccess('readOwn', 'Answer'),
