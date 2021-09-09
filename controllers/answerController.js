@@ -311,7 +311,7 @@ exports.viewOne = async (req, res) => {
 //@ ROUTE /api/answers/myanswers
 exports.studentAnswers = async (req, res) => {
   try {
-    const answers = await Answer.find({ user: req.user._id }).populate('task')
+    const answers = await Answer.find({ user: req.params.userId }).populate('task')
     //console.log('in');
     if (!answers.length) {
       return res.status(404).json({

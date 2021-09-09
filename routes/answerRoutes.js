@@ -9,7 +9,7 @@ const {
 // router.route("/").post(AllowIfLogin, answerController.addNewAnswer);
 
 router
-  .route('/myanswers')
+  .route('/myanswers/:userId')
   .get(
     AllowIfLogin,
     grantAccess('readOwn', 'Answer'),
