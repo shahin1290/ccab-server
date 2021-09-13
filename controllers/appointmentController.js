@@ -73,7 +73,6 @@ exports.manageAppointment = async (req, res, next) => {
 exports.newAppointment = async (req, res, next) => {
   const { instructor, service, sessionNumber } = req.body
 
-  console.log(instructor, service, sessionNumber)
 
   const student = await User.findById(req.user._id)
   try {
