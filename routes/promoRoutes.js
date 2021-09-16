@@ -15,7 +15,7 @@ router
   // specific pormo details
   .get(AllowIfLogin, promoController.view)
   // update a specific pormo
-  .put(AllowIfLogin, grantAccess("updateAny", "promo"), promoController.update)
+  .put(promoController.update)
   // delete a specific pormo
   .delete(
     AllowIfLogin,
