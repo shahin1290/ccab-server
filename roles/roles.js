@@ -148,5 +148,10 @@ exports.roles = (() => {
      .createAny('mediaCenter')
      .deleteAny('mediaCenter')
      .updateAny('mediaCenter')
+
+      // promo
+      .createAny('promo')
+      .deleteAny('promo')
+      .updateAny('promo')
   return ac
 })()
