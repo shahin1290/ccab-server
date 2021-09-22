@@ -15,8 +15,9 @@ const jobSchema = new mongoose.Schema({
     type: String
   },
 
-  subject: {
+  position: {
     type: String,
+    required: true
   },
   message: {
     type: String
