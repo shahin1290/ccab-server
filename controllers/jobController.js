@@ -93,14 +93,14 @@ exports.downloadOthers = async (req, res, next) => {
 //@ ROUTE /api/weeks/:bootcampId
 //@ access Protected/Admin, Mentor
 exports.new = async (req, res) => {
-  const { name, email, phone, message, subject } = req.body
+  const { name, email, phone, message, position } = req.body
   try {
     const newJob = new Job({
       name,
       email,
       phone,
       message,
-      subject,
+      position,
       cv_path:
         req.files && req.files['cv_path'] && req.files['cv_path'][0].path,
 
