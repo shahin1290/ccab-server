@@ -1,157 +1,158 @@
-const AccessControl = require('accesscontrol')
-const ac = new AccessControl()
+const AccessControl = require("accesscontrol");
+const ac = new AccessControl();
 
 exports.roles = (() => {
   // student user
-  ac.grant('StudentUser')
+  ac.grant("StudentUser")
     //profile DONE
-    .readOwn('profile')
-    .updateOwn('profile')
+    .readOwn("profile")
+    .updateOwn("profile")
     // bootcamps
-    .readAny('bootcamp')
-    .readOwn('weeks') // to function that cheking the show
-    .readOwn('days')
+    .readAny("bootcamp")
+    .readOwn("weeks") // to function that cheking the show
+    .readOwn("days")
     // test and assignment
-    .readOwn('task')
-    .readOwn('Answer')
-    .updateOwn('Answer')
+    .readOwn("task")
+    .readOwn("Answer")
+    .updateOwn("Answer")
 
     //request
-    .readOwn('request')
+    .readOwn("request")
 
     // services
-    .readAny('service')
+    .readAny("service")
 
     //appointment
-    .readAny('appointments')
-    .createOwn('appointment')
+    .readAny("appointments")
+    .createOwn("appointment")
+    .updateOwn("appointment")
 
     //session
-    .readAny('sessions')
+    .readAny("sessions")
+    .createOwn("session")
+
 
     //performance
-    .updateOwn('performance')
+    .updateOwn("performance");
 
   // Viewer user
-  ac.grant('ViewerUser').readAny('profile').readOwn('profile')
+  ac.grant("ViewerUser").readAny("profile").readOwn("profile");
 
   // Instructor user
-  ac.grant('InstructorUser')
+  ac.grant("InstructorUser")
     //profile
-    .readAny('profile')
-    .readOwn('profile')
+    .readAny("profile")
+    .readOwn("profile")
     //session
-    .readAny('sessions')
-    .readOwn('session')
-    .updateOwn('session')
-    .deleteOwn('session')
-    .createOwn('session')
+    .readAny("sessions")
+    .readOwn("session")
+    .updateOwn("session")
     //appointment
-    .readOwn('appointment')
-    .readAny('appointments')
+    .readOwn("appointment")
+    .readAny("appointments")
     // service category
-    .readAny('serviceCategories')
+    .readAny("serviceCategories")
 
     // service
-    .updateOwn('service')
+    .updateOwn("service");
 
   // Accountant user
-  ac.grant('AccountantUser')
+  ac.grant("AccountantUser")
     //profile
-    .readAny('profile')
-    .readOwn('profile')
+    .readAny("profile")
+    .readOwn("profile")
     //requests
-    .readAny('request')
-    .createAny('request')
-    .updateAny('request')
-    .deleteAny('request')
+    .readAny("request")
+    .createAny("request")
+    .updateAny("request")
+    .deleteAny("request");
 
   // Mentor user
-  ac.grant('MentorUser')
+  ac.grant("MentorUser")
     // profiles
-    .extend('ViewerUser')
-    .extend('StudentUser')
+    .extend("ViewerUser")
+    .extend("StudentUser")
     //bootcamp
-    .updateOwn('bootcamp')
-    .readAny('bootcamp')
+    .updateOwn("bootcamp")
+    .readAny("bootcamp")
 
     //weeks
-    .readAny('weeks') // get week for sepecific bootcamp
-    .createAny('weeks')
-    .deleteAny('weeks')
-    .updateAny('weeks')
+    .readAny("weeks") // get week for sepecific bootcamp
+    .createAny("weeks")
+    .deleteAny("weeks")
+    .updateAny("weeks")
     //days
-    .createAny('days')
-    .deleteAny('days')
-    .updateAny('days')
+    .createAny("days")
+    .deleteAny("days")
+    .updateAny("days")
     // test & Assignment
-    .createOwn('task')
-    .updateOwn('task')
-    .readOwn('task')
-    .deleteOwn('task')
-    .readAny('Answer')
+    .createOwn("task")
+    .updateOwn("task")
+    .readOwn("task")
+    .deleteOwn("task")
+    .readAny("Answer");
 
   // Admin user
-  ac.grant('AdminUser')
-    .extend('ViewerUser')
-    .extend('StudentUser')
-    .extend('MentorUser')
-    .extend('InstructorUser')
+  ac.grant("AdminUser")
+    .extend("ViewerUser")
+    .extend("StudentUser")
+    .extend("MentorUser")
+    .extend("InstructorUser")
 
     // Users
-    .createAny('profile')
-    .deleteAny('profile')
-    .updateAny('profile')
+    .createAny("profile")
+    .deleteAny("profile")
+    .updateAny("profile")
     // Give access
-    .createAny('accsess')
+    .createAny("accsess")
 
     // bootcamp
-    .createAny('bootcamp')
-    .deleteAny('bootcamp')
-    .updateAny('bootcamp')
+    .createAny("bootcamp")
+    .deleteAny("bootcamp")
+    .updateAny("bootcamp")
     //weeks
-    .createAny('weeks')
-    .deleteAny('weeks')
-    .updateAny('weeks')
+    .createAny("weeks")
+    .deleteAny("weeks")
+    .updateAny("weeks")
     //days
-    .createAny('days')
-    .deleteAny('days')
-    .updateAny('days')
+    .createAny("days")
+    .deleteAny("days")
+    .updateAny("days")
     // tasks
-    .createAny('task')
-    .deleteAny('task')
-    .updateAny('task')
+    .createAny("task")
+    .deleteAny("task")
+    .updateAny("task")
     //orders
-    .readAny('order')
+    .readAny("order")
     //requests
-    .readAny('request')
-    .createAny('request')
-    .updateAny('request')
-    .deleteAny('request')
+    .readAny("request")
+    .createAny("request")
+    .updateAny("request")
+    .deleteAny("request")
     //jobs
-    .readAny('job')
-    .updateAny('job')
-    .deleteAny('job')
+    .readAny("job")
+    .updateAny("job")
+    .deleteAny("job")
     // service
-    .createAny('service')
-    .deleteAny('service')
-    .updateAny('service')
+    .createAny("service")
+    .deleteAny("service")
+    .updateAny("service")
 
     // service category
-    .readAny('serviceCategory')
-    .createAny('serviceCategory')
-    .deleteAny('serviceCategory')
-    .updateAny('serviceCategory')
+    .readAny("serviceCategory")
+    .createAny("serviceCategory")
+    .deleteAny("serviceCategory")
+    .updateAny("serviceCategory")
 
-     // mediaCenter
-     .readAny('mediaCenter')
-     .createAny('mediaCenter')
-     .deleteAny('mediaCenter')
-     .updateAny('mediaCenter')
+    // mediaCenter
+    .readAny("mediaCenter")
+    .createAny("mediaCenter")
+    .deleteAny("mediaCenter")
+    .updateAny("mediaCenter")
 
-      // promo
-      .createAny('promo')
-      .deleteAny('promo')
-      .updateAny('promo')
-  return ac
-})()
+    // promo
+    .createAny("promo")
+    .deleteAny("promo")
+    .updateAny("promo");
+  return ac;
+})();
