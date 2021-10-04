@@ -35,6 +35,12 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     default: 1,
   },
+  status: {
+    type: String,
+    require: true,
+    default: "Incomming",
+    enum: ["Incomming", "Not Reported", "Reported"],
+  },
   sessions: [{ id: String, content: { type: Date } }],
   expired: {
     type: Boolean,
