@@ -19,6 +19,11 @@ router
   );
 
 router
+  .route("/:instructorId")
+  // specific week details
+  .get(appointmentController.getInsructorAppointments);
+
+router
   .route("/:id")
   // specific week details
   .get(

@@ -44,6 +44,36 @@ exports.getAllAppointments = async (req, res, next) => {
   }
 };
 
+//@des Get all sessions for specific instructors
+//@route Get api/appointment/:instructor
+//@accesss private (allow for all instructors)
+
+exports.getInsructorAppointments = async (req, res, next) => {
+  try {
+    const appointments = await Appointment.find({
+      instructor: req.params.instructorId,
+    })
+      .populate("student", "name email _id")
+      .populate("service", "name _id");
+
+    if (!appointments.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "There is No Data Found" });
+
+    return res.status(200).json({
+      success: true,
+      data: appointments.map((appointment) =>
+        appointment.sessions.map((session) => session.content.getTime())
+      ),
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Server Error" + err });
+  }
+};
+
 //@des Get all Appointment as admin
 //@route Get api/v2/Appointment/mange
 //@accesss private (allow for all users)
