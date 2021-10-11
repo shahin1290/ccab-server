@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;900&display=swap" rel="stylesheet">
+    <title>Document</title>
+</head>
+<style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      position: relative;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+    
+    .bg {
+      /* The image used */
+      background-image: url('./images/optimized-email-flyer.png');
+    
+      /* Full height */
+      height: 100%; 
+    
+      /* Center and scale the image nicely */
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+    }
+
+    .welcome {
+      /* The image used */
+      background-image: url('./images/welcome-flyer.png');
+    
+      /* Full height */
+      height: 95%; 
+    
+      /* Center and scale the image nicely */
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+    }
+
+    .login{
+        position: absolute;
+        top: 66%;
+        left: 49%;
+        color: white;
+        cursor: pointer;
+    }
+
+    .customer{
+        position: absolute;
+        top: 40%;
+        left: 36%;
+        text-align: center;
+        width: 500px;
+        color: #0D4AAD;
+    }
+
+    .offer{
+        position: absolute;
+        top: 75%;
+        left: 36%;
+        text-align: center;
+        width: 500px;
+        color: white;
+    }
+
+  
+    </style>
+<body style="height: 100%;">
+
+
+
+    <div class="bg"> <div class="welcome"></div></div>
+
+    <div class="customer">
+      <h1>[CUSTOMER NAME]</h1>
+    
+      <div style="line-height: 25px;">Thank you for signing up our FREE web development foundation course. Below are your login details:</div>
+
+      <div style="margin-top: 25px; margin-left: 34px;">Email : <input type="email"/></div>
+    
+
+      <div style="margin-top: 10px;">Password : <input type="password"/></div>
+
+    </div>
+    
+
+    <a class="login" onclick="myFunction()">Log In</a>
+
+    <div class="offer">
+
+      <div style="font-size: 60px; font-weight: 900;">30%</div>
+
+      <div style="font-size: 25px; text-shadow: 0 0 0.15em #fff;">DISCOUNT ON FULL COURSES</div>
+  
+    </div>
+
+
+    <script>
+      function myFunction() {
+        location.replace("https://ccab.tech/login")
+      }
+      </script>
+
+</body>
+</html>
