@@ -277,7 +277,6 @@ exports.quizAnswerDetails = async (req, res) => {
 //@route PUT api/quizAnswer/:quizId/:id
 //@accesss private (allow for Admin, Mentor)
 exports.updateQuizAnswer = async function (req, res) {
-  console.log(req.body)
   try {
     const { quizId, bootcampId } = req.params
 
