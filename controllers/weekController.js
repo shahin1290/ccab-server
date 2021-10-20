@@ -122,7 +122,6 @@ exports.new = async (req, res) => {
 // @ ROUTE /api/weeks/:bootcampId
 //@ access Protected/Admin, mentor and student
 exports.updateWeekShow = async (req, res) => {
-  console.log(req.params)
   try {
     const { bootcampId } = req.params
 
