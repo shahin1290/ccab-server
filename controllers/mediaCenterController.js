@@ -77,7 +77,6 @@ exports.getAllMediaCenters = async (req, res, next) => {
     var mediaCenters;
     //console.log(req.user);
 
-    console.log("normal user  request");
     if (req.query.pageNumber) {
       mediaCenters = await MediaCenter.find({ published: true })
         .limit(pageSize)
@@ -307,6 +306,7 @@ exports.updateMediaCenter = async function (req, res) {
       //update all the courses of the mediaCenter
       if (mediaCenter.courses && mediaCenter.courses.length > 0) {
         mediaCenter.courses.forEach(async (course) => {
+          console.log('course', course);
           await Bootcamp.findByIdAndUpdate(course, update);
         });
       }
