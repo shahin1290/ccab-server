@@ -306,6 +306,7 @@ exports.updateMediaCenter = async function (req, res) {
       //update all the courses of the mediaCenter
       if (mediaCenter.courses && mediaCenter.courses.length > 0) {
         mediaCenter.courses.forEach(async (course) => {
+          console.log('course', course);
           await Bootcamp.findByIdAndUpdate(course, update);
         });
       }
