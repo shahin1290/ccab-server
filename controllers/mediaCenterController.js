@@ -77,7 +77,6 @@ exports.getAllMediaCenters = async (req, res, next) => {
     var mediaCenters;
     //console.log(req.user);
 
-    console.log("normal user  request");
     if (req.query.pageNumber) {
       mediaCenters = await MediaCenter.find({ published: true })
         .limit(pageSize)

@@ -1,61 +1,61 @@
-const { validationResult } = require('express-validator')
-const QuizAnswer = require('../models/quizAnswerModel')
-const Bootcamp = require('../models/bootcampModel')
-const Quiz = require('../models/quizModel')
-const { checkIfStudentValid } = require('../util/checkStudentValidity')
-const { sendMail } = require('../middleware/sendMail')
+const { validationResult } = require("express-validator");
+const QuizAnswer = require("../models/quizAnswerModel");
+const Bootcamp = require("../models/bootcampModel");
+const Quiz = require("../models/quizModel");
+const { checkIfStudentValid } = require("../util/checkStudentValidity");
+const { sendMail } = require("../middleware/sendMail");
 
 //********** Functions ************************************
 
 //********** validation Resault ************
 
 function getValidationResualt(req) {
-  const error = validationResult(req)
-  if (!error.isEmpty()) return error.array()
-  return false
+  const error = validationResult(req);
+  if (!error.isEmpty()) return error.array();
+  return false;
 }
 
 //********** is Name exist ************
 const isNameExist = async (bootcampName) => {
-  const bootcamp = await Bootcamp.find({ name: bootcampName })
+  const bootcamp = await Bootcamp.find({ name: bootcampName });
   if (bootcamp.length) {
-    return true
+    return true;
   }
-  return false
-}
+  return false;
+};
 
 //********** Calculate Result ************
 const calculateResult = (quiz, answers) => {
-  let answerArr = []
+  let answerArr = [];
   for (const a of quiz.question) {
-    const trueAnswers = a.answers.find((b) => b.correct === true)
-    answerArr.push({ question: a.content, answer: trueAnswers.content })
+    const trueAnswers = a.answers.find((b) => b.correct === true);
+    answerArr.push({ question: a.content, answer: trueAnswers.content });
   }
 
-  let resultArr = []
+  let resultArr = [];
   for (const a of answerArr) {
     for (const b of answers) {
-      resultArr.push(JSON.stringify(b) === JSON.stringify(a))
+      resultArr.push(JSON.stringify(b) === JSON.stringify(a));
     }
   }
 
-  const noOfQuestions = quiz.question.length
-  const noOfCorrectAnswers = resultArr.filter(Boolean).length
+  const noOfQuestions = quiz.question.length;
+  const noOfCorrectAnswers = resultArr.filter(Boolean).length;
 
-  const percentageOfAccuracy = (noOfCorrectAnswers / noOfQuestions) * 100
+  const percentageOfAccuracy = (noOfCorrectAnswers / noOfQuestions) * 100;
   if (percentageOfAccuracy >= 95) {
-    return 'Excellent'
+    return "Excellent";
   }
   if (percentageOfAccuracy >= 75 && percentageOfAccuracy < 95) {
-    return 'Good'
+    return "Good";
   }
   if (percentageOfAccuracy >= 60 && percentageOfAccuracy < 75) {
-    return 'Not Bad'
+    return "Not Bad";
   }
   if (percentageOfAccuracy < 60) {
-    return 'Failed'
+    return "Failed";
   }
-}
+};
 
 //********** Functions End************************************
 //@des GET all quizAnswers for specific quiz
@@ -65,103 +65,107 @@ const calculateResult = (quiz, answers) => {
 exports.getAllQuizAnswers = async (req, res, next) => {
   try {
     //check the bootcamp exists
-    const bootcamp = await Bootcamp.findById(req.params.bootcampId)
+    const bootcamp = await Bootcamp.findById(req.params.bootcampId);
 
     if (!bootcamp) {
       return res.status(404).json({
         success: false,
-        message: 'No Bootcamp found!'
-      })
+        message: "No Bootcamp found!",
+      });
     }
 
     //find the quiz
     const quiz = await Quiz.findOne({
       bootcamp: bootcamp._id,
-      _id: req.params.quizId
-    })
+      _id: req.params.quizId,
+    });
 
     if (!quiz) {
       return res.status(404).json({
         success: false,
-        message: 'No Quiz found!'
-      })
+        message: "No Quiz found!",
+      });
     }
 
-    let quizAnswers
+    let quizAnswers;
 
     //check if the student is enrolled in the bootcamp
-    if (req.user.user_type === 'StudentUser') {
-      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id)
+    if (req.user.user_type === "StudentUser") {
+      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id);
 
       if (!isValidStudent) {
         return res.status(404).json({
           success: false,
-          message: 'Student is not enrolled in this bootcamp'
-        })
+          message: "Student is not enrolled in this bootcamp",
+        });
       }
 
       quizAnswers = await QuizAnswer.find({
         quiz: quiz._id,
-        user: req.user._id
-      }).populate('user name')
+        user: req.user._id,
+      }).populate("user name");
     }
 
     //check if is the mentor for the bootcamp
-    if (req.user.user_type === 'MentorUser') {
+    if (req.user.user_type === "MentorUser") {
       if (!req.user._id.equals(bootcamp.mentor)) {
         return res.status(404).json({
           success: false,
-          message: 'You are not allowed mentor for this bootcamp'
-        })
+          message: "You are not allowed mentor for this bootcamp",
+        });
       }
       quizAnswers = await QuizAnswer.find({ quiz: quiz._id }).populate(
-        'user name'
-      )
+        "user name"
+      );
     }
 
     //check if is the admin
-    if (req.user.user_type === 'AdminUser') {
+    if (req.user.user_type === "AdminUser") {
       quizAnswers = await QuizAnswer.find({ quiz: quiz._id }).populate(
-        'user name'
-      )
+        "user name"
+      );
     }
 
     if (quizAnswers.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No quiz answer found!'
-      })
+        message: "No quiz answer found!",
+      });
     }
 
     return res.status(200).json({
       success: true,
       count: quizAnswers.length,
-      data: quizAnswers
-    })
+      data: quizAnswers,
+    });
   } catch (err) {
-    return res.status(500).json({ success: false, error: 'Server Error' + err })
+    return res
+      .status(500)
+      .json({ success: false, error: "Server Error" + err });
   }
-}
+};
 
 //get myquize for student
 exports.getMyQizzeAnswer = async (req, res, next) => {
   try {
-    const quizzAnswer = await QuizAnswer.find({ _id: req.user._id })
+    const quizzAnswer = await QuizAnswer.find({ _id: req.user._id });
     if (!quizzAnswer.length) {
       return res.status(404).json({
         success: false,
-        message: 'No Quiz found!'
-      })
+        message: "No Quiz found!",
+      });
     }
 
     return res.status(200).json({
       success: true,
-      count: quizzAnswer.length
-    })
+      count: quizzAnswer.length,
+    });
   } catch (error) {
-    return res.status(500).json({ success: false, error: 'Server Error' + err })
+    return res
+      .status(500)
+      .json({ success: false, error: "Server Error" + err });
   }
-}
+};
 
 /* //@des POST new quizAnswer
 //@route POST api/quizId/quizAnswer
@@ -195,221 +199,221 @@ exports.newQuizAnswer = async (req, res, next) => {
 //@accesss private (allow for Admin, mentor and student)
 exports.quizAnswerDetails = async (req, res) => {
   try {
-    const { id, quizId, bootcampId } = req.params
+    const { id, quizId, bootcampId } = req.params;
 
-    const bootcamp = await Bootcamp.findById(bootcampId)
+    const bootcamp = await Bootcamp.findById(bootcampId);
 
     if (!bootcamp) {
       return res.status(404).json({
         success: false,
-        message: 'No Bootcamp found!'
-      })
+        message: "No Bootcamp found!",
+      });
     }
 
     //find the quiz
     const quiz = await Quiz.findOne({
       bootcamp: bootcamp._id,
-      _id: quizId
-    })
+      _id: quizId,
+    });
 
     if (!quiz) {
       return res.status(404).json({
         success: false,
-        message: 'No Quiz found!'
-      })
+        message: "No Quiz found!",
+      });
     }
 
-    let quizAnswer
+    let quizAnswer;
 
     //check if the student is enrolled in the bootcamp
-    if (req.user.user_type === 'StudentUser') {
-      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id)
+    if (req.user.user_type === "StudentUser") {
+      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id);
 
       if (!isValidStudent) {
         return res.status(404).json({
           success: false,
-          message: 'Student is not enrolled in this bootcamp'
-        })
+          message: "Student is not enrolled in this bootcamp",
+        });
       }
 
       quizAnswer = await QuizAnswer.findOne({
         _id: id,
         quiz: quiz._id,
-        user: req.user._id
-      })
+        user: req.user._id,
+      });
     }
 
     //check if is the mentor for the bootcamp
-    if (req.user.user_type === 'MentorUser') {
+    if (req.user.user_type === "MentorUser") {
       if (!req.user._id.equals(bootcamp.mentor)) {
         return res.status(404).json({
           success: false,
-          message: 'You are not allowed mentor for this bootcamp'
-        })
+          message: "You are not allowed mentor for this bootcamp",
+        });
       }
-      quizAnswer = await QuizAnswer.findOne({ _id: id, quiz: quiz._id })
+      quizAnswer = await QuizAnswer.findOne({ _id: id, quiz: quiz._id });
     }
 
     //check if is the admin
-    if (req.user.user_type === 'AdminUser') {
-      quizAnswer = await QuizAnswer.findOne({ _id: id, quiz: quiz._id })
+    if (req.user.user_type === "AdminUser") {
+      quizAnswer = await QuizAnswer.findOne({ _id: id, quiz: quiz._id });
     }
 
     if (!quizAnswer) {
       return res.status(404).json({
         success: false,
-        message: 'No quiz answer found!'
-      })
+        message: "No quiz answer found!",
+      });
     }
 
     return res.status(200).json({
       success: true,
-      data: quizAnswer
-    })
+      data: quizAnswer,
+    });
   } catch (err) {
     return res
       .status(500)
-      .json({ success: false, error: 'Server error: ' + err })
+      .json({ success: false, error: "Server error: " + err });
   }
-}
+};
 
 //@des PUT Update single quizAnswer for specific quiz
 //@route PUT api/quizAnswer/:quizId/:id
 //@accesss private (allow for Admin, Mentor)
 exports.updateQuizAnswer = async function (req, res) {
   try {
-    const { quizId, bootcampId } = req.params
+    const { quizId, bootcampId } = req.params;
 
-    const bootcamp = await Bootcamp.findById(bootcampId)
+    const bootcamp = await Bootcamp.findById(bootcampId);
 
     if (!bootcamp) {
       return res.status(404).json({
         success: false,
-        message: 'No Bootcamp found!'
-      })
+        message: "No Bootcamp found!",
+      });
     }
 
     //find the quiz
     const quiz = await Quiz.findOne({
       bootcamp: bootcamp._id,
-      _id: quizId
-    }).populate('question.answers')
+      _id: quizId,
+    }).populate("question.answers");
 
     if (!quiz) {
       return res.status(404).json({
         success: false,
-        message: 'No Quiz found!'
-      })
+        message: "No Quiz found!",
+      });
     }
 
-    let updatedQuizAnswer
+    let updatedQuizAnswer;
 
     //check if the student is enrolled in the bootcamp
-    if (req.user.user_type === 'StudentUser') {
-      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id)
+    if (req.user.user_type === "StudentUser") {
+      const isValidStudent = await checkIfStudentValid(bootcamp, req.user._id);
 
       if (!isValidStudent) {
         return res.status(404).json({
           success: false,
-          message: 'Student is not enrolled in this bootcamp'
-        })
+          message: "Student is not enrolled in this bootcamp",
+        });
       }
 
       updatedQuizAnswer = await QuizAnswer.findOneAndUpdate(
         {
           quiz: quiz._id,
-          user: req.user._id
+          user: req.user._id,
         },
         {
           answers: req.body.answer,
           status: calculateResult(quiz, req.body.answer),
           quizTime: req.body.quizTime,
-          createdAt: new Date()
+          createdAt: new Date(),
         }
-      )
+      );
     }
 
     //send email to the student (graded Answer) .............>
     const toUser = {
       email: req.user.email,
-      name: req.user.name
-    }
-    const subjet = 'New grade: is updated in ' + ' Quiz'
+      name: req.user.name,
+    };
+    const subjet = "New grade: is updated in " + " Quiz";
     const html = {
-      student: '',
-      text: 'We want to inform you that your quiz has been graded in ',
+      student: "",
+      text: "We want to inform you that your quiz has been graded in ",
       quiz:
-        ' ' +
-        ' assignment.<br><br> <b>You can Check the new grade by logging in to your profile OR Click below!</b>',
-      link: 'https://ccab.tech/profile'
-    }
-    const mailStatus = sendMail(res, toUser, subjet, html)
+        " " +
+        " assignment.<br><br> <b>You can Check the new grade by logging in to your profile OR Click below!</b>",
+      link: "https://ccab.tech/profile",
+    };
+    const mailStatus = sendMail(res, toUser, subjet, html);
 
     return res.status(200).json({
       success: true,
       data: {
         quizAnswer: updatedQuizAnswer,
-        status: calculateResult(quiz, req.body.answer)
-      }
-    })
+        status: calculateResult(quiz, req.body.answer),
+      },
+    });
   } catch (err) {
     return res
       .status(500)
-      .json({ success: false, error: 'Server Error : ' + err })
+      .json({ success: false, error: "Server Error : " + err });
   }
-}
+};
 
 //@des DELETE single bootcamp for specific account
 //@route DELETE api/v2/bootcamp/:id
 //@accesss private (allow for Admin)
 exports.deleteQuizAnswer = async function (req, res) {
   try {
-    const { id, quizId, bootcampId } = req.params
+    const { id, quizId, bootcampId } = req.params;
 
-    const bootcamp = await Bootcamp.findById(bootcampId)
+    const bootcamp = await Bootcamp.findById(bootcampId);
 
     if (!bootcamp) {
       return res.status(404).json({
         success: false,
-        message: 'No Bootcamp found!'
-      })
+        message: "No Bootcamp found!",
+      });
     }
 
     //find the quiz
     const quiz = await Quiz.findOne({
       bootcamp: bootcamp._id,
-      _id: quizId
-    })
+      _id: quizId,
+    });
 
     if (!quiz) {
       return res.status(404).json({
         success: false,
-        message: 'No Quiz found!'
-      })
+        message: "No Quiz found!",
+      });
     }
 
     const quizAnswer = await QuizAnswer.findOne({
       _id: id,
-      quiz: quiz._id
-    })
+      quiz: quiz._id,
+    });
     if (!QuizAnswer)
       return res.status(404).json({
-        message: "QuizAnswer Doesn't  Exist "
-      })
+        message: "QuizAnswer Doesn't  Exist ",
+      });
 
-    await quizAnswer.deleteOne()
+    await quizAnswer.deleteOne();
 
     return res.status(200).json({
       data: null,
-      message: 'QuizAnswer hase been deleted',
-      success: true
-    })
+      message: "QuizAnswer hase been deleted",
+      success: true,
+    });
   } catch (err) {
     return res
       .status(500)
-      .json({ success: false, error: 'Server Error : ' + err })
+      .json({ success: false, error: "Server Error : " + err });
   }
-}
+};
 
 // Get students Dashboard asnwer list
 //@ DESC get my answer
@@ -417,22 +421,24 @@ exports.deleteQuizAnswer = async function (req, res) {
 exports.studentQuizAnswers = async (req, res) => {
   try {
     const quizAnswers = await QuizAnswer.find({
-      user: req.params.userId
-    }).populate('quiz')
+      user: req.params.userId,
+    }).populate("quiz");
 
     if (!quizAnswers.length) {
       return res.status(404).json({
         success: false,
-        message: 'No Answer Found.'
-      })
+        message: "No Answer Found.",
+      });
     }
 
     return res.status(200).json({
       success: true,
       count: quizAnswers.length,
-      data: quizAnswers
-    })
+      data: quizAnswers,
+    });
   } catch (err) {
-    return res.status(500).json({ success: false, error: 'Server Error' + err })
+    return res
+      .status(500)
+      .json({ success: false, error: "Server Error" + err });
   }
-}
+};
