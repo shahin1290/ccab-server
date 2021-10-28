@@ -53,7 +53,7 @@ exports.getWeeks = async (req, res) => {
     if (req.user.user_type === 'StudentUser') {
       const isValidStudent = await checkIfStudentValid(bootcampId, req.user._id)
 
-      weeks = await Week.find({ bootcamp: bootcampId, show: true })
+      weeks = await Week.find({ bootcamp: bootcampId })
         .populate('bootcamp')
         .populate({ path: 'days', model: 'Day' })
 
