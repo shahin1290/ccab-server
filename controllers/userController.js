@@ -577,7 +577,6 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, gender, language } = req.body;
 
-    console.log("sss", name, email, password, phoneNumber, gender);
 
     // check if the name or email exist
     const EmailORNameExist = await isEmailOrNameExist(email);
