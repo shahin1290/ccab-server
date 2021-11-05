@@ -29,7 +29,7 @@ const sendMail = (
   const mailOptions_ForStudent = {
     from: process.env.email,
     to: toUser.email,
-    cc: '',
+    cc: 'te.abdul.m@codifycollege.se',
     bcc: '',
     subject: subject,
     text: '',

@@ -191,7 +191,7 @@ exports.createOrder = async (req, res) => {
     //send email to admin
     const admin = await User.findOne({ user_type: "AdminUser" });
 
-    const toUser = { email: admin.email, name: admin.name };
+    const toUser = { email: 'info@codifycollege.se', name: admin.name };
     const subject = "New Stripe Order";
     const html = {
       student: "",
