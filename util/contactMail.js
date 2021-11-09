@@ -5,8 +5,13 @@ const {thanks} = require('../util/thanks_template')
 
 const sendContactMail = (data) => {
   const emailTo = [
-    { email: process.env.email, template: contact(data) },
-    { email: data.email, template: thanks(data) }
+    { email: process.env.email,
+      subject:data.subject||'Code Academy Contact' , 
+      template: contact(data) },
+
+    { email: data.email, 
+      subject:data.subject||'Code Academy Contact' , 
+      template: thanks(data) }
   ]
 
   const smtpTransport = mailer.createTransport({
@@ -21,7 +26,7 @@ const sendContactMail = (data) => {
     const mailOptions = {
       from: `"Codify Academy" ${process.env.email}`,
       to: el.email,
-      subject: 'Code Academy Contact',
+      subject: el.subject,
       html: el.template
     }
 
