@@ -12,7 +12,7 @@ const {thanksForContact } = require('../util/thanks_response_template')
 
 const sendContactMail = (data) => {
   const emailTo = [
-    { email: process.env.email,
+    { email: process.env.InfoEmail,
       subject:data.Subject||'Code Academy Contact' , 
       template: contact(data) },
 

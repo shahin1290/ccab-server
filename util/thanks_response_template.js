@@ -1,4 +1,4 @@
-const thanks = (data) => {
+const thanksForContact = (data) => {
   return `
   <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -201,7 +201,7 @@ const thanks = (data) => {
                                         <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
 
                                             <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                            Hello ${data.name}!<br></br>
+                                            Hello ${data.Name}!<br></br>
                                               Thank you for contacting us. We're really happy to have you! Our Support team are going to contact you as soon as possible. 
                                               <br> please visit our website for more information:
                                             </div>
@@ -343,4 +343,4 @@ const thanks = (data) => {
     `
 }
 
-module.exports = { thanks }
+module.exports = { thanksForContact }

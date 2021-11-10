@@ -345,4 +345,4 @@ const thanks = (data) => {
     `
 }
 
-module.exports = { thanksForContact  }
+module.exports = { thanks  }
