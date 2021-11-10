@@ -1,4 +1,6 @@
-<!doctype html>
+const thanks = (data) => {
+  return `
+  <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
@@ -199,11 +201,9 @@
                                         <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
 
                                             <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
-                                              Hello ${data.name}!<br></br>
-                                                  Thank you for signing up. We're really happy to have you! 
-                                                  <br><br>
-                                                  Click the link below to login to your account 
-                                                    and start you <strong>Free Foundation  Course</strong>:
+                                            Hello ${data.name}!<br></br>
+                                              Thank you for contacting us. We're really happy to have you! Our Support team are going to contact you as soon as possible. 
+                                              <br> please visit our website for more information:
                                             </div>
 
                                         </td>
@@ -215,8 +215,8 @@
                                             <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
                                                 <tr>
                                                     <td align="center" bgcolor="#2F67F6" role="presentation" style="border:none;border-radius:3px;color:#ffffff;cursor:auto;padding:15px 25px;" valign="middle">
-                                                        <a href="https://ccab.tech/course-content/60c379d0e246b913b0fb70c7" style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
-                                                            Start Learning >
+                                                        <a href="https://ccab.tech" style="background:#2F67F6;color:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;font-size:15px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;">
+                                                            CF College
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -340,3 +340,7 @@
 </body>
 
 </html>
+    `
+}
+
+module.exports = { thanks }

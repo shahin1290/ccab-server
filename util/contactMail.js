@@ -1,17 +1,24 @@
 const mailer = require('nodemailer')
 const {contact} = require('../util/contact_template')
 const {thanks} = require('../util/thanks_template')
+const {thanksForContact } = require('../util/thanks_response_template')
 
+// incoming variable >>> 
+// Name 
+// Subject
+// Message
+// Email
+// Phone
 
 const sendContactMail = (data) => {
   const emailTo = [
     { email: process.env.email,
-      subject:data.subject||'Code Academy Contact' , 
+      subject:data.Subject||'Code Academy Contact' , 
       template: contact(data) },
 
-    { email: data.email, 
-      subject:data.subject||'Code Academy Contact' , 
-      template: thanks(data) }
+    { email: data.Email, 
+      subject:data.Subject||'Code Academy Contact' , 
+      template: thanksForContact(data) }
   ]
 
   const smtpTransport = mailer.createTransport({
