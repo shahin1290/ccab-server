@@ -17,6 +17,7 @@ const contact = (data) => {
                     <li><span style="font-weight: bold">Phone:</span> ${data.Phone}</li>
                     <li><span style="font-weight: bold">Industry:</span> ${data.industry||'no data'}</li>
                     <li><span style="font-weight: bold">Category:</span> ${data.category ||'no data' }</li>
+                    <li><span style="font-weight: bold">Subject:</span> ${data.Subject}</li>
                     <li><span style="font-weight: bold">Message:</span> ${data.Message}</li>
                 </ul>  
               <br />

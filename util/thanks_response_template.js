@@ -202,7 +202,9 @@ const thanksForContact = (data) => {
 
                                             <div style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:16px;line-height:22px;text-align:left;color:#555;">
                                             Hello ${data.Name}!<br></br>
-                                              Thank you for contacting us. We're really happy to have you! Our Support team are going to contact you as soon as possible. 
+                                              Thank you for contacting us. We're really happy to have you! 
+                                              <br> <br>
+                                              Our Support team are going to contact you as soon as possible. 
                                               <br> please visit our website for more information:
                                             </div>
 
