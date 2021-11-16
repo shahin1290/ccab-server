@@ -126,6 +126,7 @@ const performanceRoutes = require("./routes/performanceRoutes");
 const mediaCenterRoutes = require("./routes/mediaCenterRoutes");
 const dailyActivityRoutes = require("./routes/dailyActivityRoutes");
 const promoRoutes = require("./routes/promoRoutes");
+const serviceAppointmentRoutes = require("./routes/serviceAppointmentRoutes");
 
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
@@ -146,6 +147,7 @@ app.use("/api/performance", performanceRoutes);
 app.use("/api/mediaCenter", mediaCenterRoutes);
 app.use("/api/dailyActivity", dailyActivityRoutes);
 app.use("/api/promo", promoRoutes);
+app.use("/api/serviceAppointment", serviceAppointmentRoutes);
 
 const server = app.listen(PORT, () => {
   console.log("The server is running on port: " + PORT);
