@@ -418,7 +418,8 @@ exports.createKlarnaSession = async (req, res) => {
         .status(201)
         .json({ success: true, data: JSON.stringify(resp.data) });
   } catch (error) {
-    console.log("error", error);
+    console.log("error", error.message);
+    console.log("error", error.response.message);
     res.status(500).json({
       message: "Server Error" + error,
     });

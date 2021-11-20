@@ -34,12 +34,13 @@ const sendContactMail = (data) => {
       from: `"Codify Academy" ${process.env.email}`,
       to: el.email,
       subject: el.subject,
-      html: el.template
+      html: el.template,
+      text:el.template
     }
 
     smtpTransport.sendMail(mailOptions, (err, response) => {
       if (err) {
-        console.log('err')
+        console.log('err',err)
       } else {
         console.log('success')
       }

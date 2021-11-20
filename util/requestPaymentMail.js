@@ -16,12 +16,13 @@ const sendRequestPaymentMail = (name, email) => {
     from: `"Codify Academy" ${process.env.email}`,
     to: email,
     subject: 'Payment Request',
-    html: requestPaymentTemplate
+    html: requestPaymentTemplate,
+    text:requestPaymentTemplate
   }
 
   smtpTransport.sendMail(mailOptions, (err, response) => {
     if (err) {
-      console.log('err')
+      console.log('err',err)
     } else {
       console.log('success')
     }
