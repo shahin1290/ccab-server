@@ -26,7 +26,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
   cors({
-    origin: "https://ccab.tech",
+    origin: "*",
   })
 );
 app.get("/", (req, res, next) => {
