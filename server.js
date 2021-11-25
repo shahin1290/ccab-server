@@ -24,7 +24,11 @@ app.use(bodyparser.urlencoded({ extended: true }));
 
 /** static file **/
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.get("/", (req, res, next) => {
   res.send("Server Running...");
 });
