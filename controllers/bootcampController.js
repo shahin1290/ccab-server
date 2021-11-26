@@ -5,6 +5,7 @@ const Week = require("./../models/weekModel");
 const Day = require("./../models/dayModel");
 const Quiz = require("./../models/quizModel");
 const Task = require("./../models/taskModel");
+const Answer = require("./../models/answerModel");
 const QuizAnswer = require("./../models/quizAnswerModel");
 
 const fs = require("fs");
