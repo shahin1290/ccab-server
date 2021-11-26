@@ -348,6 +348,8 @@ exports.updateBootcamp = async function (req, res) {
       update = { ...update, students: JSON.parse(req.body.students) };
 
       //if new student is added, create all previous quiz and task answers
+
+      /* 
       const newStudetArray = JSON.parse(req.body.students).filter(
         (x) => bootcamp.students.indexOf(x) === -1
       );
@@ -381,7 +383,7 @@ exports.updateBootcamp = async function (req, res) {
             await answer.save();
           });
         }
-      }
+      } */
     }
 
     if (req.body.info_list) {
