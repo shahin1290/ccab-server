@@ -49,7 +49,11 @@ const userSchema = new mongoose.Schema({
       ref: 'User'
     }
   ],
-  gender: { type: String, enum: ['male', 'female', 'other'] },
+  gender: { type: String, enum: ['male', 'female', 'others'] },
+
+  education: {
+    type: String
+  },
   user_type: {
     type: String,
     require: true,

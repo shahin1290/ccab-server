@@ -133,7 +133,7 @@ exports.new = async (req, res) => {
   }
 
   try {
-    const { name, email, password, user_type, phone, gender, language } =
+    const { name, email, password, user_type, phone, gender, language, education } =
       req.body;
 
     // check if the name or email exist
@@ -162,6 +162,7 @@ exports.new = async (req, res) => {
       phoneNumber: phone,
       gender: gender,
       language: language,
+      education
     });
 
     // salt the password
@@ -575,7 +576,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const { name, email, password, phoneNumber, gender, language } = req.body;
+    const { name, email, password, phoneNumber, gender, language, education } = req.body;
 
 
     // check if the name or email exist
@@ -604,6 +605,7 @@ exports.register = async (req, res) => {
       user_type: "StudentUser",
       gender,
       language,
+      education
     });
 
     // salt the password
