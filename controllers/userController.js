@@ -320,7 +320,6 @@ exports.viewUserProfile = async (req, res) => {
 //@ ROUTE /api/users/profile
 
 exports.update = async (req, res) => {
-  console.log(req.body);
   const errors = getValidationResualt(req);
   if (errors)
     //returning only first error allways

@@ -32,8 +32,6 @@ exports.roles = (() => {
     .createOwn("session")
 
 
-    //performance
-    .updateOwn("performance");
 
   // Viewer user
   ac.grant("ViewerUser").readAny("profile").readOwn("profile");
@@ -138,11 +136,7 @@ exports.roles = (() => {
     .deleteAny("service")
     .updateAny("service")
 
-    // service category
-    .readAny("serviceCategory")
-    .createAny("serviceCategory")
-    .deleteAny("serviceCategory")
-    .updateAny("serviceCategory")
+
 
     // mediaCenter
     .readAny("mediaCenter")
